@@ -239,6 +239,52 @@ body.deep-looped .site-footer {
   filter: sepia(0.25) brightness(0.95);
 }
 
+/* === DEEP PAGE WEIRDNESS === */
+body.deep.dim-all .main,
+body.deep.dim-all .site-header,
+body.deep.dim-all .site-footer {
+  filter: brightness(0.65) contrast(0.9);
+  transform: scale(0.97);
+  transition: all 0.4s ease;
+}
+
+.weird-btn {
+  position: relative;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.weird-btn.eyeball {
+  background: transparent;
+  border: none;
+  width: 90px;
+  height: 90px;
+  background-image: url('assets/eye-open.png');
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  animation: subtlePulse 5s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.blink-flash {
+  position: fixed;
+  inset: 0;
+  background: white;
+  z-index: 9999;
+  animation: blinkFlash 1.3s ease-in-out;
+}
+
+@keyframes blinkFlash {
+  0%, 100% { opacity: 0; }
+  45%, 55% { opacity: 1; }
+}
+
+
 /* ============================================================
    FINAL visibility fix for GAP section
    ============================================================ */
