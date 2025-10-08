@@ -284,6 +284,89 @@ body.deep.dim-all .site-footer {
   45%, 55% { opacity: 1; }
 }
 
+/* ============================================================
+   Deep Page Click Effects — Shrink, Rumble, Eyeball, Flash
+   ============================================================ */
+
+/* === Shrink + Dim Stages === */
+body.shrink-1 .main,
+body.shrink-1 .site-header,
+body.shrink-1 .site-footer {
+  transform: scale(0.97);
+  filter: brightness(0.85);
+  transition: all 0.4s ease;
+}
+
+body.shrink-2 .main,
+body.shrink-2 .site-header,
+body.shrink-2 .site-footer {
+  transform: scale(0.94);
+  filter: brightness(0.75);
+  transition: all 0.4s ease;
+}
+
+body.shrink-3 .main,
+body.shrink-3 .site-header,
+body.shrink-3 .site-footer {
+  transform: scale(0.9);
+  filter: brightness(0.6);
+  transition: all 0.4s ease;
+}
+
+/* === Rumble Animation === */
+@keyframes subtleRumble {
+  0%, 100% { transform: translate(0,0); }
+  20% { transform: translate(-1px,1px); }
+  40% { transform: translate(1px,-1px); }
+  60% { transform: translate(-1px,-1px); }
+  80% { transform: translate(1px,1px); }
+}
+
+body.rumble {
+  animation: subtleRumble 0.25s ease-in-out 3;
+}
+body.shrink-2.rumble {
+  animation: subtleRumble 0.3s ease-in-out 4;
+  filter: brightness(0.8) contrast(0.9);
+}
+body.shrink-3.rumble {
+  animation: subtleRumble 0.4s ease-in-out 5;
+  filter: brightness(0.7) contrast(0.85);
+}
+
+/* === Eyeball Button === */
+.btn.eyeball {
+  background: transparent;
+  border: none;
+  width: 90px;
+  height: 90px;
+  background-image: url('assets/eye-open.png');
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  animation: subtlePulse 5s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* === Blink / Flash === */
+.blink-flash {
+  position: fixed;
+  inset: 0;
+  background: white;
+  z-index: 9999;
+  animation: blinkFlash 1.3s ease-in-out;
+}
+
+@keyframes blinkFlash {
+  0%,100% { opacity: 0; }
+  45%,55% { opacity: 1; }
+}
+
+
 
 /* ============================================================
    FINAL visibility fix for GAP section
