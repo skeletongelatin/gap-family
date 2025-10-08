@@ -125,6 +125,24 @@ body.secret {background:#0b0b0c;color:#ddd;}
   user-select: none;
 }
 
+/* Mobile GAP instruction text */
+.gap-mobile-instruction {
+  text-align: center;
+  font-family: "Times New Roman", cursive;
+  font-style: italic;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 0.6rem;
+}
+
+/* Wrap keys together nicely */
+.gap-key-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+
 .gap-key.pressed {
   transform: translateY(3px);
   box-shadow: 0 1px 0 #ccc, 0 3px 6px rgba(0,0,0,0.1);
