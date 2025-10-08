@@ -142,7 +142,6 @@ body.secret {background:#0b0b0c;color:#ddd;}
   gap: 0.8rem;
 }
 
-
 .gap-key.pressed {
   transform: translateY(3px);
   box-shadow: 0 1px 0 #ccc, 0 3px 6px rgba(0,0,0,0.1);
@@ -185,8 +184,6 @@ body.secret {background:#0b0b0c;color:#ddd;}
   71%, 100% { opacity: 0; } /* fade out / reset */
 }
 
-
-
 /* Fix G-A-P overlap with Coming Soon box */
 .gap-sequence {
   position: relative;
@@ -199,10 +196,52 @@ body.secret {background:#0b0b0c;color:#ddd;}
   margin-top: 0; /* remove the negative margin pulling it up */
 }
 
+/* GAP blue highlight */
+.gap-blue {
+  color: var(--gap-blue);
+}
 
+/* ============================================================
+   Lights-Out Overlay + Deep Page Visuals (fixed)
+   ============================================================ */
+.lights-out {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease-in;
+  z-index: 9999;
+}
 
+.lights-out.visible {
+  opacity: 1;
+}
 
-/* ===== FINAL visibility fix for GAP section ===== */
+/* Deep page “lights on again” */
+body.deep-looped {
+  background-color: #f8f3e0 !important;
+  color: #222;
+  animation: flickerOn 1.5s ease-in-out;
+}
+
+@keyframes flickerOn {
+  0%, 10%, 25%, 40% { opacity: 0; }
+  15%, 30%, 50%, 100% { opacity: 1; }
+}
+
+/* Subtle worn look */
+body.deep-looped .hero-image,
+body.deep-looped .content,
+body.deep-looped .btn,
+body.deep-looped .site-header,
+body.deep-looped .site-footer {
+  filter: sepia(0.25) brightness(0.95);
+}
+
+/* ============================================================
+   FINAL visibility fix for GAP section
+   ============================================================ */
 .desktop-only {
   display: block !important;
 }

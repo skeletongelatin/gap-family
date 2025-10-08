@@ -5,7 +5,7 @@
      • Deep-Loop triggers
      • Gradual transitions
      • Whisper chime logic
-     • GAP key/tap sequence
+     • GAP key/tap sequence (now triggers lights-out → deep.html)
      • District Manager photo fade/swap
    ============================================================ */
 
@@ -47,8 +47,8 @@
     setupLogoSequence();
     setupGradualTransition();
     setupChimeTest();
-    setupGapSequence();           // NEW G-A-P sequence
-    setupDistrictManagerPhoto();  // NEW photo fade/swap
+    setupGapSequence();           // G-A-P typing/tapping sequence
+    setupDistrictManagerPhoto();  // About page image effect
 
     if (localStorage.getItem(deepLoopKey) === '1')
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
@@ -85,7 +85,7 @@
   function enableDeepLoop(reason){
     try{localStorage.setItem(deepLoopKey,'1');}catch(e){}
     applyDeepLoopVisuals();
-    playWhisperOnce(true); // force play on activation
+    playWhisperOnce(true);
     console.log('Deep Loop activated:',reason);
   }
 
@@ -151,6 +151,7 @@
         progress.push(k);
         if(progress.join('')===required.join('')){
           playWhisperOnce(true);
+          triggerLightsOut(); // NEW
           progress = [];
         } else if(progress.join('') !== required.slice(0,progress.length).join('')){
           progress = [];
@@ -173,6 +174,7 @@
           tapProgress.push(k.dataset.key);
           if(tapProgress.join('')===required.join('')){
             playWhisperOnce(true);
+            triggerLightsOut(); // NEW
             tapProgress = [];
           } else if(tapProgress.join('') !== required.slice(0,tapProgress.length).join('')){
             tapProgress = [];
@@ -243,5 +245,38 @@
     overlay.querySelector('button').addEventListener('click',close);
     window.addEventListener('keydown',e=>{if(e.key==='Escape')close();},{once:true});
   }
+
+/* ============================================================
+   Lights-Out Transition → Deep Page (fixed)
+   ============================================================ */
+function triggerLightsOut() {
+  // Remove existing overlays if any
+  const existing = document.querySelector('.lights-out');
+  if (existing) existing.remove();
+
+  // Create new overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'lights-out';
+  document.body.appendChild(overlay);
+
+  // Force reflow so CSS transitions apply
+  void overlay.offsetWidth;
+
+  // Add the visible class slightly delayed to ensure transition fires
+  setTimeout(() => overlay.classList.add('visible'), 50);
+
+  // Play chime
+  const chime = new Audio('assets/whisper-clip.mp3');
+  chime.volume = 0.6;
+  chime.play().catch(() => {});
+
+  console.log('⚫ Lights out triggered — redirecting soon');
+
+  // Wait for blackout hold, then switch page
+  setTimeout(() => {
+    window.location.href = 'deep.html';
+  }, 2200);
+}
+
 
 })(); // end IIFE

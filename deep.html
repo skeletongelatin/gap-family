@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>thegapfamily - back so soon</title>
+  <meta name="description" content="The lights came back on, but something’s changed.">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="script.js"></script>
+</head>
+<body class="vintage deep" data-page="deep">
+  <header class="site-header">
+    <div class="wrap">
+      <a href="index.html" class="logo">
+        <img src="assets/logo.png" alt="gap" width="140" height="40">
+      </a>
+      <nav class="nav">
+        <a href="products.html">Products</a>
+        <a href="about.html">About</a>
+        <a href="#" class="join">you're here</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap main">
+    <section class="hero hero-image" style="filter:sepia(0.4) brightness(0.8);">
+      <h1>We're open always today forever open<br><small>Lloyd Center — Basement, OR</small></h1>
+      <p>Everything’s still here, we promise! That's our promise foryou.</p>
+    </section>
+
+    <section class="content">
+      <div class="coming">
+        <strong>Reopening Again</strong>
+        <p class="notice">Inventory moves, even when the store is closed!</p>
+      </div>
+
+      <div class="cta-row">
+        <a class="btn" href="index.html">don't go</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>&copy; <span id="year"></span> thegapfamily — the gap is always growing</p>
+      <p class="tiny">Closed in 2017. open forever. don't forget to clock out</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
