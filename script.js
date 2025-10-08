@@ -248,37 +248,49 @@
     console.log('⚫ Lights out triggered — redirecting soon');
     setTimeout(()=>{window.location.href='deep.html';},2200);
   }
-
-  /* ============================================================
-     DEEP PAGE BUTTON LOGIC + RUMBLE
-     ============================================================ */
- function setupDeepPage() {
+/* ============================================================
+   DEEP PAGE BUTTON LOGIC + RUMBLE + BUTTON STORM
+   ============================================================ */
+function setupDeepPage() {
   const btn = document.querySelector('.btn');
   if (!btn) return;
 
   let clickStage = 0;
+  let stormInterval;
 
   btn.addEventListener('click', (e) => {
     e.preventDefault();
-
     clickStage++;
+
+    // Subtle rumble each click
     document.body.classList.add('rumble');
     setTimeout(() => document.body.classList.remove('rumble'), 500);
 
+    // === Click 1: shrink stage 1 ===
     if (clickStage === 1) {
       document.body.classList.add('shrink-1');
       btn.textContent = "you can't";
+
+    // === Click 2: shrink stage 2 ===
     } else if (clickStage === 2) {
       document.body.classList.remove('shrink-1');
       document.body.classList.add('shrink-2');
       btn.textContent = "stop";
+
+    // === Click 3: final stage ===
     } else if (clickStage === 3) {
       document.body.classList.remove('shrink-2');
       document.body.classList.add('shrink-3');
       btn.textContent = "YOU ARE HERE NOW";
       btn.classList.add('final-stage');
+
+      // Start spawning extra buttons
+      startButtonStorm();
+
+    // === Click 4+: glitch flash + redirect ===
     } else if (clickStage > 3) {
-      // Glitch back to index
+      clearInterval(stormInterval);
+
       const glitch = document.createElement('div');
       glitch.className = 'glitch-flash';
       document.body.appendChild(glitch);
@@ -288,7 +300,61 @@
       }, 1200);
     }
   });
+
+  /* === Create random buttons after final stage === */
+  function startButtonStorm() {
+    const phrases = ["no", "now open", "on sale", "today only", "gap.com"];
+    const body = document.body;
+
+    let totalSpawned = 0;
+    const maxButtons = 25;
+
+    stormInterval = setInterval(() => {
+      if (totalSpawned >= maxButtons) {
+        clearInterval(stormInterval);
+        return;
+      }
+      totalSpawned++;
+
+      const clone = document.createElement('button');
+      clone.className = 'btn clone-btn';
+      clone.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+
+      // Match size roughly to final-stage button
+      clone.style.position = 'fixed';
+      clone.style.top = `${Math.random() * 90 + 5}%`;
+      clone.style.left = `${Math.random() * 90 + 5}%`;
+      clone.style.transform = `translate(-50%, -50%) scale(${0.9 + Math.random() * 0.3})`;
+      clone.style.zIndex = 9997;
+      clone.style.opacity = '0';
+      clone.style.transition = 'opacity 0.4s ease, transform 0.3s ease';
+      clone.style.background = 'var(--gap-blue)';
+      clone.style.color = 'white';
+      clone.style.padding = '2rem 4rem';
+      clone.style.textTransform = 'uppercase';
+      clone.style.letterSpacing = '1px';
+      clone.style.boxShadow = '0 0 20px rgba(0,0,0,0.4)';
+
+      body.appendChild(clone);
+
+      // Fade in and rumble
+      requestAnimationFrame(() => {
+        clone.style.opacity = '1';
+        clone.style.transform += ' rotate(' + (Math.random() * 10 - 5) + 'deg)';
+        document.body.classList.add('rumble');
+        setTimeout(() => document.body.classList.remove('rumble'), 400);
+      });
+
+      // Optional random fade-out and removal after a few seconds
+      setTimeout(() => {
+        clone.style.opacity = '0';
+        setTimeout(() => clone.remove(), 1000);
+      }, 4000 + Math.random() * 3000);
+
+    }, 350); // frequency of spawning
+  }
 }
+
 
 
 })();
