@@ -1,20 +1,11 @@
 /* ============================================================
    script.js  (The Gap Family, Oct 2025 build)
-   Implements:
-     • Surface-level RNG quirks
-     • Deep-Loop triggers
-     • Gradual transitions
-     • Whisper chime logic
-     • GAP key/tap sequence (now triggers lights-out → deep.html)
-     • District Manager photo fade/swap
    ============================================================ */
-
 (function(){
   const PAGE_IDS = ['index','products','about'];
   const deepLoopKey = 'tgf_deep_loop';
-  const visitKey   = 'tgf_visited_pages';
+  const visitKey = 'tgf_visited_pages';
   const chimePlayedKey = 'tgf_chime_played';
-
   const q = s => document.querySelector(s);
   const qAll = s => Array.from(document.querySelectorAll(s));
 
@@ -47,15 +38,18 @@
     setupLogoSequence();
     setupGradualTransition();
     setupChimeTest();
-    setupGapSequence();           // G-A-P typing/tapping sequence
-    setupDistrictManagerPhoto();  // About page image effect
+    setupGapSequence();
+    setupDistrictManagerPhoto();
 
     if (localStorage.getItem(deepLoopKey) === '1')
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
+
+    // === Deep Page special ===
+    if (body.dataset.page === 'deep') setupDeepPage();
   });
 
   /* ============================================================
-     Surface quirks (mild hover flickers, shifts)
+     Surface quirks
      ============================================================ */
   function applySurfaceQuirks(){
     qAll('.promo,.product,.member').forEach(el=>{
@@ -80,7 +74,7 @@
   }
 
   /* ============================================================
-     Deep Loop visuals & activator
+     Deep Loop visuals
      ============================================================ */
   function enableDeepLoop(reason){
     try{localStorage.setItem(deepLoopKey,'1');}catch(e){}
@@ -110,7 +104,7 @@
   }
 
   /* ============================================================
-     Logo click sequence
+     Logo click
      ============================================================ */
   function setupLogoSequence(){
     const logo=q('.logo img');
@@ -126,7 +120,7 @@
   }
 
   /* ============================================================
-     Manual chime test (press C only once per page)
+     Manual chime test (C)
      ============================================================ */
   function setupChimeTest(){
     window.addEventListener('keydown',e=>{
@@ -138,7 +132,7 @@
   }
 
   /* ============================================================
-     GAP Sequence — desktop typing or mobile tapping
+     GAP Sequence
      ============================================================ */
   function setupGapSequence(){
     const required = ['g','a','p'];
@@ -151,7 +145,7 @@
         progress.push(k);
         if(progress.join('')===required.join('')){
           playWhisperOnce(true);
-          triggerLightsOut(); // NEW
+          triggerLightsOut();
           progress = [];
         } else if(progress.join('') !== required.slice(0,progress.length).join('')){
           progress = [];
@@ -174,31 +168,24 @@
           tapProgress.push(k.dataset.key);
           if(tapProgress.join('')===required.join('')){
             playWhisperOnce(true);
-            triggerLightsOut(); // NEW
+            triggerLightsOut();
             tapProgress = [];
           } else if(tapProgress.join('') !== required.slice(0,tapProgress.length).join('')){
             tapProgress = [];
           }
         });
       });
-
-      // prompt wiggle on mobile
-      if (window.innerWidth <= 768) {
-        keyElements.forEach(k => k.classList.add('prompt'));
-        setTimeout(() => keyElements.forEach(k => k.classList.remove('prompt')), 2500);
-      }
     }
   }
 
   /* ============================================================
-     District Manager Photo Fade + Swap (About page)
+     District Manager Photo
      ============================================================ */
   function setupDistrictManagerPhoto(){
     const img = q('img[src*="employee2.jpg"]');
     if(!img)return;
     let clickCount = 0;
     const maxClicks = 5;
-
     img.addEventListener('click',()=>{
       clickCount++;
       if(clickCount < maxClicks){
@@ -216,7 +203,7 @@
   }
 
   /* ============================================================
-     Whisper chime helper
+     Whisper chime
      ============================================================ */
   function playWhisperOnce(force=false){
     if(!force && Math.random()>0.06)return;
@@ -226,17 +213,16 @@
   }
 
   /* ============================================================
-     RNG overlay (rare)
+     RNG overlay
      ============================================================ */
   function maybeShowOverlay(){
     if(Math.random()>0.05)return;
     const overlay=document.createElement('div');
     overlay.className='rng-overlay';
-    overlay.innerHTML=`<button class="overlay-btn" aria-label="Continue">continue</button>`;
+    overlay.innerHTML=`<button class="overlay-btn">continue</button>`;
     document.body.appendChild(overlay);
     playWhisperOnce(true);
     requestAnimationFrame(()=>overlay.classList.add('visible'));
-
     const close=()=>{
       overlay.classList.remove('visible');
       setTimeout(()=>overlay.remove(),1200);
@@ -246,90 +232,65 @@
     window.addEventListener('keydown',e=>{if(e.key==='Escape')close();},{once:true});
   }
 
-/* ============================================================
-   Lights-Out Transition → Deep Page (fixed)
-   ============================================================ */
-function triggerLightsOut() {
-  // Remove existing overlays if any
-  const existing = document.querySelector('.lights-out');
-  if (existing) existing.remove();
+  /* ============================================================
+     Lights-Out Transition → Deep Page
+     ============================================================ */
+  function triggerLightsOut(){
+    const existing=document.querySelector('.lights-out');
+    if(existing)existing.remove();
+    const overlay=document.createElement('div');
+    overlay.className='lights-out';
+    document.body.appendChild(overlay);
+    void overlay.offsetWidth;
+    setTimeout(()=>overlay.classList.add('visible'),50);
+    const chime=new Audio('assets/whisper-clip.mp3');
+    chime.volume=0.6;chime.play().catch(()=>{});
+    console.log('⚫ Lights out triggered — redirecting soon');
+    setTimeout(()=>{window.location.href='deep.html';},2200);
+  }
 
-  // Create new overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'lights-out';
-  document.body.appendChild(overlay);
+  /* ============================================================
+     DEEP PAGE BUTTON LOGIC + RUMBLE
+     ============================================================ */
+  function setupDeepPage(){
+    const body=document.body;
+    const button=document.querySelector('.btn');
+    if(!button)return;
+    let clickCount=0;
 
-  // Force reflow so CSS transitions apply
-  void overlay.offsetWidth;
+    button.addEventListener('click',()=>{
+      clickCount++;
 
-  // Add the visible class slightly delayed to ensure transition fires
-  setTimeout(() => overlay.classList.add('visible'), 50);
+      // rumble each click
+      body.classList.add('rumble');
+      setTimeout(()=>body.classList.remove('rumble'),600);
 
-  // Play chime
-  const chime = new Audio('assets/whisper-clip.mp3');
-  chime.volume = 0.6;
-  chime.play().catch(() => {});
-
-  console.log('⚫ Lights out triggered — redirecting soon');
-
-  // Wait for blackout hold, then switch page
-  setTimeout(() => {
-    window.location.href = 'deep.html';
-  }, 2200);
-}
-
-   // === DEEP PAGE BUTTON LOGIC ===
-document.addEventListener('DOMContentLoaded', () => {
-  const body = document.body;
-  if (body.dataset.page !== 'deep') return; // only run on deep.html
-
-  const button = document.getElementById('weirdButton');
-  const yearSpan = document.getElementById('year');
-  if (yearSpan) yearSpan.textContent = new Date().getFullYear();
-
-  let clickStage = 0;
-
-  button.addEventListener('click', () => {
-    clickStage++;
-
-    // First three clicks: dim effect
-    if (clickStage <= 3) {
-      body.classList.add('dim-all');
-      setTimeout(() => body.classList.remove('dim-all'), 700);
-    }
-
-    // On 4th click: change button to eyeball
-    if (clickStage === 4) {
-      button.classList.add('eyeball');
-      button.textContent = '';
-    }
-
-    // After 4th click: blink and flash white
-    if (clickStage > 4) {
-      button.style.backgroundImage = "url('assets/eye-closed.png')";
-      const flash = document.createElement('div');
-      flash.className = 'blink-flash';
-      document.body.appendChild(flash);
-
-      setTimeout(() => flash.remove(), 1200);
-      setTimeout(() => {
-        button.style.backgroundImage = "url('assets/eye-open.png')";
-      }, 700);
-
-      // After enough blinks, return home
-      if (clickStage >= 7) {
-        const whiteout = document.createElement('div');
-        whiteout.className = 'blink-flash';
-        whiteout.style.animation = 'blinkFlash 2.2s ease forwards';
-        document.body.appendChild(whiteout);
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 2000);
+      // shrink/dim progression
+      if(clickCount===1){
+        body.classList.add('shrink-1');
+        button.textContent="you can't";
+      } else if(clickCount===2){
+        body.classList.add('shrink-2');
+        button.textContent="stop";
+      } else if(clickCount===3){
+        body.classList.add('shrink-3');
+        button.classList.add('eyeball');
+        button.textContent='';
+      } else if(clickCount>3){
+        // blink sequence
+        const flash=document.createElement('div');
+        flash.className='blink-flash';
+        document.body.appendChild(flash);
+        setTimeout(()=>flash.remove(),1200);
+        if(clickCount>=6){
+          const whiteout=document.createElement('div');
+          whiteout.className='blink-flash';
+          whiteout.style.animation='blinkFlash 2.2s ease forwards';
+          document.body.appendChild(whiteout);
+          setTimeout(()=>window.location.href='index.html',2000);
+        }
       }
-    }
-  });
-});
+    });
+  }
 
-
-
-})(); // end IIFE
+})();
