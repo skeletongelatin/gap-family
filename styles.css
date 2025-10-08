@@ -284,11 +284,12 @@ body.deep.dim-all .site-footer {
   45%, 55% { opacity: 1; }
 }
 
+
 /* ============================================================
-   Deep Page Click Effects — Shrink, Rumble, Eyeball, Flash
+   Deep Page Final Sequence — YOU ARE HERE NOW + Glitch Return
    ============================================================ */
 
-/* === Shrink + Dim Stages === */
+/* === Shrink Stages (unchanged) === */
 body.shrink-1 .main,
 body.shrink-1 .site-header,
 body.shrink-1 .site-footer {
@@ -313,9 +314,9 @@ body.shrink-3 .site-footer {
   transition: all 0.4s ease;
 }
 
-/* === Rumble Animation === */
+/* === Rumble Effect === */
 @keyframes subtleRumble {
-  0%, 100% { transform: translate(0,0); }
+  0%,100% { transform: translate(0,0); }
   20% { transform: translate(-1px,1px); }
   40% { transform: translate(1px,-1px); }
   60% { transform: translate(-1px,-1px); }
@@ -323,48 +324,54 @@ body.shrink-3 .site-footer {
 }
 
 body.rumble {
-  animation: subtleRumble 0.25s ease-in-out 3;
-}
-body.shrink-2.rumble {
-  animation: subtleRumble 0.3s ease-in-out 4;
-  filter: brightness(0.8) contrast(0.9);
-}
-body.shrink-3.rumble {
-  animation: subtleRumble 0.4s ease-in-out 5;
-  filter: brightness(0.7) contrast(0.85);
+  animation: subtleRumble 0.3s ease-in-out 3;
 }
 
-/* === Eyeball Button === */
-.btn.eyeball {
-  background: transparent;
-  border: none;
-  width: 90px;
-  height: 90px;
-  background-image: url('assets/eye-open.png');
-  background-size: cover;
-  background-position: center;
-  cursor: pointer;
-  animation: subtlePulse 5s ease-in-out infinite;
+/* === Final Overwhelming Button === */
+.btn.final-stage {
+  position: fixed !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  font-size: 2rem;
+  padding: 2rem 4rem;
+  z-index: 9998;
+  background: var(--gap-blue);
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.5);
+  animation: rumbleGrow 2s ease-in-out infinite;
 }
 
-@keyframes subtlePulse {
-  0%,100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+@keyframes rumbleGrow {
+  0%,100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.05); }
 }
 
-/* === Blink / Flash === */
-.blink-flash {
+/* === Glitch Transition Back to Normal === */
+.glitch-flash {
   position: fixed;
   inset: 0;
-  background: white;
   z-index: 9999;
-  animation: blinkFlash 1.3s ease-in-out;
+  background: repeating-linear-gradient(
+    0deg,
+    #fff 0px,
+    #fff 2px,
+    #ccc 3px,
+    #fff 5px
+  );
+  animation: glitchFlash 1.2s ease-in-out;
+  opacity: 0;
 }
 
-@keyframes blinkFlash {
-  0%,100% { opacity: 0; }
-  45%,55% { opacity: 1; }
+@keyframes glitchFlash {
+  0% { opacity: 0; }
+  20%, 40%, 60%, 80% { opacity: 1; transform: translateY(-1px); }
+  30%, 50%, 70%, 90% { opacity: 1; transform: translateY(1px); }
+  100% { opacity: 0; }
 }
+
 
 
 
