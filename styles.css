@@ -254,22 +254,6 @@ body.deep.dim-all .site-footer {
   transition: all 0.3s ease;
 }
 
-.weird-btn.eyeball {
-  background: transparent;
-  border: none;
-  width: 90px;
-  height: 90px;
-  background-image: url('assets/eye-open.png');
-  background-size: cover;
-  background-position: center;
-  cursor: pointer;
-  animation: subtlePulse 5s ease-in-out infinite;
-}
-
-@keyframes subtlePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
 
 .blink-flash {
   position: fixed;
