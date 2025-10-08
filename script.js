@@ -252,45 +252,43 @@
   /* ============================================================
      DEEP PAGE BUTTON LOGIC + RUMBLE
      ============================================================ */
-  function setupDeepPage(){
-    const body=document.body;
-    const button=document.querySelector('.btn');
-    if(!button)return;
-    let clickCount=0;
+ function setupDeepPage() {
+  const btn = document.querySelector('.btn');
+  if (!btn) return;
 
-    button.addEventListener('click',()=>{
-      clickCount++;
+  let clickStage = 0;
 
-      // rumble each click
-      body.classList.add('rumble');
-      setTimeout(()=>body.classList.remove('rumble'),600);
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
 
-      // shrink/dim progression
-      if(clickCount===1){
-        body.classList.add('shrink-1');
-        button.textContent="you can't";
-      } else if(clickCount===2){
-        body.classList.add('shrink-2');
-        button.textContent="stop";
-      } else if(clickCount===3){
-        body.classList.add('shrink-3');
-        button.classList.add('eyeball');
-        button.textContent='';
-      } else if(clickCount>3){
-        // blink sequence
-        const flash=document.createElement('div');
-        flash.className='blink-flash';
-        document.body.appendChild(flash);
-        setTimeout(()=>flash.remove(),1200);
-        if(clickCount>=6){
-          const whiteout=document.createElement('div');
-          whiteout.className='blink-flash';
-          whiteout.style.animation='blinkFlash 2.2s ease forwards';
-          document.body.appendChild(whiteout);
-          setTimeout(()=>window.location.href='index.html',2000);
-        }
-      }
-    });
-  }
+    clickStage++;
+    document.body.classList.add('rumble');
+    setTimeout(() => document.body.classList.remove('rumble'), 500);
+
+    if (clickStage === 1) {
+      document.body.classList.add('shrink-1');
+      btn.textContent = "you can't";
+    } else if (clickStage === 2) {
+      document.body.classList.remove('shrink-1');
+      document.body.classList.add('shrink-2');
+      btn.textContent = "stop";
+    } else if (clickStage === 3) {
+      document.body.classList.remove('shrink-2');
+      document.body.classList.add('shrink-3');
+      btn.textContent = "YOU ARE HERE NOW";
+      btn.classList.add('final-stage');
+    } else if (clickStage > 3) {
+      // Glitch back to index
+      const glitch = document.createElement('div');
+      glitch.className = 'glitch-flash';
+      document.body.appendChild(glitch);
+
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1200);
+    }
+  });
+}
+
 
 })();
