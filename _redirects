@@ -1,0 +1,3 @@
+# Redirect non-www to www + HTTPS
+http://thegapfamily.com/*  https://www.thegapfamily.com/:splat  301!
+https://thegapfamily.com/*  https://www.thegapfamily.com/:splat  301!
