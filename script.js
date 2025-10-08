@@ -278,5 +278,58 @@ function triggerLightsOut() {
   }, 2200);
 }
 
+   // === DEEP PAGE BUTTON LOGIC ===
+document.addEventListener('DOMContentLoaded', () => {
+  const body = document.body;
+  if (body.dataset.page !== 'deep') return; // only run on deep.html
+
+  const button = document.getElementById('weirdButton');
+  const yearSpan = document.getElementById('year');
+  if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+
+  let clickStage = 0;
+
+  button.addEventListener('click', () => {
+    clickStage++;
+
+    // First three clicks: dim effect
+    if (clickStage <= 3) {
+      body.classList.add('dim-all');
+      setTimeout(() => body.classList.remove('dim-all'), 700);
+    }
+
+    // On 4th click: change button to eyeball
+    if (clickStage === 4) {
+      button.classList.add('eyeball');
+      button.textContent = '';
+    }
+
+    // After 4th click: blink and flash white
+    if (clickStage > 4) {
+      button.style.backgroundImage = "url('assets/eye-closed.png')";
+      const flash = document.createElement('div');
+      flash.className = 'blink-flash';
+      document.body.appendChild(flash);
+
+      setTimeout(() => flash.remove(), 1200);
+      setTimeout(() => {
+        button.style.backgroundImage = "url('assets/eye-open.png')";
+      }, 700);
+
+      // After enough blinks, return home
+      if (clickStage >= 7) {
+        const whiteout = document.createElement('div');
+        whiteout.className = 'blink-flash';
+        whiteout.style.animation = 'blinkFlash 2.2s ease forwards';
+        document.body.appendChild(whiteout);
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 2000);
+      }
+    }
+  });
+});
+
+
 
 })(); // end IIFE
