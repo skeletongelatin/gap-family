@@ -132,23 +132,42 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   /* ============================================================
   GAP sequence
   ============================================================ */
-  function setupGapSequence(){
-    const required = ['g','a','p'];
-    let progress = [];
-    window.addEventListener('keydown', e=>{
-      const k = e.key.toLowerCase();
-      if(required.includes(k)){
-        progress.push(k);
-        if(progress.join('')===required.join('')){
-          playWhisperOnce(true);
-          triggerLightsOut();
-          progress = [];
-        } else if(progress.join('') !== required.slice(0,progress.length).join('')){
-          progress = [];
-        }
-      }
+function setupGapSequence() {
+  const required = ['g', 'a', 'p'];
+  let progress = [];
+
+  // --- DESKTOP keyboard sequence ---
+  window.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    if (required.includes(k)) {
+      progress.push(k);
+      checkGapProgress();
+    }
+  });
+
+  // --- MOBILE key images (NEW) ---
+  const keyEls = document.querySelectorAll('.gap-key');
+  keyEls.forEach(el => {
+    el.addEventListener('click', () => {
+      const k = el.dataset.key;
+      el.classList.add('pressed');
+      setTimeout(() => el.classList.remove('pressed'), 150);
+      progress.push(k);
+      checkGapProgress();
     });
+  });
+
+  // --- Common logic ---
+  function checkGapProgress() {
+    if (progress.join('') === required.join('')) {
+      playWhisperOnce(true);
+      triggerLightsOut();
+      progress = [];
+    } else if (progress.join('') !== required.slice(0, progress.length).join('')) {
+      progress = [];
+    }
   }
+}
 
   /* ============================================================
   District Manager Photo
