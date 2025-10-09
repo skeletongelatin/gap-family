@@ -13,9 +13,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #0f0;
-      font-family: monospace;
-      font-size: 1rem;
     }
 
     #image {
@@ -25,15 +22,6 @@
       object-fit: cover;
       transition: opacity 2s ease;
       filter: brightness(0.3) contrast(1.2);
-    }
-
-    #text {
-      position: absolute;
-      bottom: 1rem;
-      width: 100%;
-      text-align: center;
-      opacity: 0;
-      transition: opacity 2s ease;
     }
 
     .flicker {
@@ -52,13 +40,10 @@
 </head>
 <body>
   <img id="image" src="assets/backroom.jpg" alt="storage room">
-  <div id="text">Checking in the back...</div>
-
   <audio id="ambient" src="assets/backroom.mp3"></audio>
 
   <script>
     const img = document.getElementById('image');
-    const text = document.getElementById('text');
     const audio = document.getElementById('ambient');
 
     // fade in image + flicker
@@ -67,16 +52,16 @@
       img.classList.add('flicker');
     }, 1000);
 
-    // reveal text
-    setTimeout(() => {
-      text.style.opacity = 1;
-    }, 3000);
-
-    // play sound
+    // play ambient sound
     setTimeout(() => {
       audio.volume = 0.5;
       audio.play().catch(() => {}); // ignore autoplay block
     }, 2000);
+
+    // try to close popup after 10s
+    setTimeout(() => {
+      window.close();
+    }, 10000);
   </script>
 </body>
 </html>
