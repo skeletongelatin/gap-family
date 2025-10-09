@@ -1,18 +1,11 @@
 /* ============================================================
-   script.js — The Gap Family (Oct 2025, stable clean build)
-   For: index.html / about.html
-   Handles:
-     • Flicker quirks
-     • Deep Loop visuals
-     • G-A-P typing + tapping
-     • Whisper + Lights-Out transition
-     • District Manager image fade
-   ============================================================ */
+script.js (The Gap Family, Oct 2025 — Stable Working Version)
+============================================================ */
 
-(function(){
+(function() {
   const PAGE_IDS = ['index','products','about'];
   const deepLoopKey = 'tgf_deep_loop';
-  const visitKey   = 'tgf_visited_pages';
+  const visitKey = 'tgf_visited_pages';
   const chimePlayedKey = 'tgf_chime_played';
   const q = s => document.querySelector(s);
   const qAll = s => Array.from(document.querySelectorAll(s));
@@ -26,7 +19,6 @@
       if (el) el.textContent = year;
     });
 
-    // track visited pages
     try {
       let visited = sessionStorage.getItem(visitKey);
       visited = visited ? JSON.parse(visited) : [];
@@ -37,28 +29,27 @@
       if (PAGE_IDS.every(p => visited.includes(p))) enableDeepLoop('visited_all_pages');
     } catch(e){}
 
-    // random deep loop trigger
     if (page === 'about' && Math.random() < 0.10) {
       setTimeout(()=> enableDeepLoop('about_rng'), 700 + Math.random()*800);
     }
 
     if (localStorage.getItem(deepLoopKey) === '1') applyDeepLoopVisuals();
-
     applySurfaceQuirks();
     setupLogoSequence();
     setupGradualTransition();
     setupChimeTest();
     setupGapSequence();
     setupDistrictManagerPhoto();
-
     if (localStorage.getItem(deepLoopKey) === '1')
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
+    injectDistortionCSS();
+    setupHelpAndDMChat();
   });
 
   /* ============================================================
-     Small flickers & hover quirks
-     ============================================================ */
-  function applySurfaceQuirks(){
+  Surface quirks
+  ============================================================ */
+  function applySurfaceQuirks() {
     qAll('.promo,.product,.member').forEach(el=>{
       if (Math.random()<0.28){
         el.classList.add('shift-small');
@@ -81,21 +72,22 @@
   }
 
   /* ============================================================
-     Deep Loop visuals
-     ============================================================ */
+  Deep Loop visuals
+  ============================================================ */
   function enableDeepLoop(reason){
     try{localStorage.setItem(deepLoopKey,'1');}catch(e){}
     applyDeepLoopVisuals();
     playWhisperOnce(true);
     console.log('Deep Loop activated:',reason);
   }
+
   function applyDeepLoopVisuals(){
     document.body.classList.add('deep-loop');
   }
 
   /* ============================================================
-     Gradual dim transition
-     ============================================================ */
+  Gradual transition
+  ============================================================ */
   function setupGradualTransition(){
     if(Math.random()<0.06&&localStorage.getItem(deepLoopKey)!=='1'){
       setTimeout(()=>{
@@ -103,15 +95,15 @@
         setTimeout(()=>{
           if(localStorage.getItem(deepLoopKey)!=='1'&&Math.random()<0.4)
             setTimeout(()=>document.body.classList.remove('deep-loop'),
-                       4000+Math.random()*6000);
+              4000+Math.random()*6000);
         },12000);
       },1000+Math.random()*3200);
     }
   }
 
   /* ============================================================
-     Logo easter egg
-     ============================================================ */
+  Logo click
+  ============================================================ */
   function setupLogoSequence(){
     const logo=q('.logo img');
     if(!logo)return;
@@ -126,8 +118,8 @@
   }
 
   /* ============================================================
-     Manual chime test
-     ============================================================ */
+  Manual chime test
+  ============================================================ */
   function setupChimeTest(){
     window.addEventListener('keydown',e=>{
       if(e.key.toLowerCase()==='c' && !sessionStorage.getItem(chimePlayedKey)){
@@ -138,13 +130,11 @@
   }
 
   /* ============================================================
-     GAP sequence — typing (desktop) + tapping (mobile)
-     ============================================================ */
+  GAP sequence
+  ============================================================ */
   function setupGapSequence(){
     const required = ['g','a','p'];
     let progress = [];
-
-    // Desktop typing
     window.addEventListener('keydown', e=>{
       const k = e.key.toLowerCase();
       if(required.includes(k)){
@@ -158,41 +148,11 @@
         }
       }
     });
-
-    // Mobile tapping
-    const keyElements = qAll('.gap-key');
-    if(keyElements.length){
-      let tapProgress = [];
-      keyElements.forEach(k=>{
-        k.addEventListener('click',()=>{
-          const click = new Audio('assets/keyclick.mp3');
-          click.volume = 0.2;
-          click.play().catch(()=>{});
-          k.classList.add('pressed');
-          setTimeout(()=>k.classList.remove('pressed'),150);
-
-          tapProgress.push(k.dataset.key);
-          if(tapProgress.join('')===required.join('')){
-            playWhisperOnce(true);
-            triggerLightsOut();
-            tapProgress = [];
-          } else if(tapProgress.join('') !== required.slice(0,tapProgress.length).join('')){
-            tapProgress = [];
-          }
-        });
-      });
-
-      // small prompt wiggle on load
-      if(window.innerWidth <= 768){
-        keyElements.forEach(k => k.classList.add('prompt'));
-        setTimeout(()=> keyElements.forEach(k => k.classList.remove('prompt')), 2500);
-      }
-    }
   }
 
   /* ============================================================
-     District Manager Photo
-     ============================================================ */
+  District Manager Photo
+  ============================================================ */
   function setupDistrictManagerPhoto(){
     const img = q('img[src*="employee2.jpg"]');
     if(!img)return;
@@ -215,8 +175,8 @@
   }
 
   /* ============================================================
-     Whisper sound
-     ============================================================ */
+  Whisper chime
+  ============================================================ */
   function playWhisperOnce(force=false){
     if(!force && Math.random()>0.06)return;
     const audio=new Audio('assets/whisper-clip.mp3');
@@ -225,8 +185,8 @@
   }
 
   /* ============================================================
-     Lights-Out → deep.html
-     ============================================================ */
+  Lights-Out Transition
+  ============================================================ */
   function triggerLightsOut(){
     const existing=document.querySelector('.lights-out');
     if(existing)existing.remove();
@@ -235,33 +195,157 @@
     document.body.appendChild(overlay);
     void overlay.offsetWidth;
     setTimeout(()=>overlay.classList.add('visible'),50);
-
     const chime=new Audio('assets/whisper-clip.mp3');
-    chime.volume=0.6;
-    chime.play().catch(()=>{});
+    chime.volume=0.6;chime.play().catch(()=>{});
     console.log('⚫ Lights out triggered — redirecting soon');
     setTimeout(()=>{window.location.href='deep.html';},2200);
   }
 
   /* ============================================================
-     Rare overlay event
-     ============================================================ */
-  function maybeShowOverlay(){
-    if(Math.random()>0.05)return;
-    const overlay=document.createElement('div');
-    overlay.className='rng-overlay';
-    overlay.innerHTML=`<button class="overlay-btn" aria-label="Continue">continue</button>`;
-    document.body.appendChild(overlay);
-    playWhisperOnce(true);
-    requestAnimationFrame(()=>overlay.classList.add('visible'));
-
-    const close=()=>{
-      overlay.classList.remove('visible');
-      setTimeout(()=>overlay.remove(),1200);
-      playWhisperOnce(true);
-    };
-    overlay.querySelector('button').addEventListener('click',close);
-    window.addEventListener('keydown',e=>{if(e.key==='Escape')close();},{once:true});
+  Distortion CSS
+  ============================================================ */
+  function injectDistortionCSS(){
+    const style=document.createElement("style");
+    style.textContent=`
+      .dm-message.distort-reveal {
+        animation: distortFade 2.4s ease-in-out;
+      }
+      @keyframes distortFade {
+        0% { filter: contrast(180%) saturate(150%) blur(2px); opacity: 0; transform: skewX(6deg);}
+        10% { filter: none; opacity: 1; transform: skewX(0deg);}
+        40% { filter: hue-rotate(40deg) contrast(130%); }
+        60% { filter: none; }
+        85% { filter: blur(1px) contrast(200%); }
+        100% { filter: none; opacity: 1; transform: none; }
+      }
+    `;
+    document.head.appendChild(style);
   }
 
-})(); // end IIFE
+  /* ============================================================
+  Unified Helpdesk + DM Chat
+  ============================================================ */
+  function setupHelpAndDMChat(){
+    const helpBubble = document.querySelector("#help-bubble");
+    const helpChat = document.querySelector("#help-chat");
+    const helpMessages = helpChat?.querySelector(".help-messages");
+    const helpInput = document.querySelector("#help-input");
+    const header = helpChat?.querySelector(".help-header");
+
+    if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
+
+    let districtOnline = false;
+    let idleTimer = null;
+
+    function addMessage(type, text) {
+      const msg = document.createElement("div");
+      msg.className = `help-message ${type}`;
+      msg.innerHTML = text;
+      helpMessages.appendChild(msg);
+      helpMessages.scrollTop = helpMessages.scrollHeight;
+    }
+
+    function showTyping(callback, delay = 1000) {
+      const dots = document.createElement("div");
+      dots.className = "dm-typing";
+      dots.innerHTML = "<span></span><span></span><span></span>";
+      helpMessages.appendChild(dots);
+      helpMessages.scrollTop = helpMessages.scrollHeight;
+      setTimeout(() => {
+        dots.remove();
+        callback();
+      }, delay);
+    }
+
+    helpBubble.addEventListener("click", () => {
+      helpChat.classList.toggle("visible");
+      if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
+        addMessage("bot", "Our help desk is currently offline. Please leave a message.");
+      }
+    });
+
+    helpInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && helpInput.value.trim()) {
+        const text = helpInput.value.trim();
+        helpInput.value = "";
+        addMessage("user", text);
+        clearTimeout(idleTimer);
+
+        if (!districtOnline) {
+          showTyping(() => {
+            addMessage("bot", "We’re currently outside help desk business hours.");
+            setTimeout(() => {
+              const systemMsg = document.createElement("div");
+              systemMsg.className = "help-message system";
+              systemMsg.textContent = "DISTRICT MANAGER has joined the chat...";
+              helpMessages.appendChild(systemMsg);
+              helpMessages.scrollTop = helpMessages.scrollHeight;
+              setTimeout(startDistrictManager, 1800);
+            }, 1500);
+          }, 1200);
+        } else {
+          handleDMResponse(text);
+        }
+      }
+    });
+
+    function startDistrictManager() {
+      districtOnline = true;
+      header.textContent = "District Manager 🟢";
+      header.classList.add("dm-online");
+      showTyping(() => {
+        addMessage("bot", "What are you looking for?");
+        resetIdleTimer();
+      }, 1200);
+    }
+
+    function handleDMResponse(inputText) {
+      resetIdleTimer();
+      const lower = inputText.toLowerCase();
+      const productWords = /(shirt|jacket|pants|product|item|stock|inventory|jeans|hoodie)/;
+      const nonsense = [
+        "that’s not in stock.",
+        "check the shelves again.",
+        "we moved everything recently.",
+        "inventory fluctuates in the dark.",
+        "loss prevention is aware.",
+        "…did you clock in?",
+      ];
+
+      if (productWords.test(lower)) {
+        showTyping(() => {
+          const msg = document.createElement("div");
+          msg.className = "help-message bot";
+          msg.innerHTML = `<a href="#" class="check-back-link">Check in the back →</a>`;
+          helpMessages.appendChild(msg);
+          helpMessages.scrollTop = helpMessages.scrollHeight;
+
+          const link = msg.querySelector(".check-back-link");
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const audio = new Audio("assets/backroom.mp3");
+            audio.volume = 0.5;
+            audio.play().catch(()=>{});
+            const w = 700, h = 500;
+            const left = window.screenX + (window.outerWidth - w) / 2;
+            const top = window.screenY + (window.outerHeight - h) / 2;
+            const features = `width=${w},height=${h},left=${left},top=${top},popup=yes,resizable=no,scrollbars=no`;
+            const popup = window.open("back.html", "backpopup", features);
+            if (!popup) window.open("back.html", "_blank");
+          });
+        }, 1500);
+      } else {
+        showTyping(() => {
+          addMessage("bot", nonsense[Math.floor(Math.random() * nonsense.length)]);
+        }, 1000);
+      }
+    }
+
+    function resetIdleTimer() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        addMessage("bot", "Still there?");
+      }, 7000);
+    }
+  }
+})();
