@@ -1,5 +1,5 @@
 /* ============================================================
-   script.js  (The Gap Family, Oct 2025 build, DM fixed + backroom popup)
+   script.js  (The Gap Family, Oct 2025 build, DM + Backroom fix)
    ============================================================ */
 (function(){
   const PAGE_IDS = ['index','products','about'];
@@ -43,8 +43,6 @@
 
     if (localStorage.getItem(deepLoopKey) === '1')
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
-
-    if (body.dataset.page === 'deep') setupDeepPage();
 
     injectDistortionCSS();
     setupHelpAndDMChat();
@@ -246,7 +244,7 @@
   }
 
 /* ============================================================
-   Unified Helpdesk + District Manager Chat
+   Unified Helpdesk + District Manager Chat (Final + Back popup)
    ============================================================ */
 function setupHelpAndDMChat(){
   const helpBubble = q("#help-bubble");
@@ -260,6 +258,7 @@ function setupHelpAndDMChat(){
   let districtOnline = false;
   let idleTimer = null;
 
+  // === Util helpers ===
   function addMessage(type, text) {
     const msg = document.createElement("div");
     msg.className = `help-message ${type}`;
@@ -274,7 +273,10 @@ function setupHelpAndDMChat(){
     dots.innerHTML = "<span></span><span></span><span></span>";
     helpMessages.appendChild(dots);
     helpMessages.scrollTop = helpMessages.scrollHeight;
-    setTimeout(() => { dots.remove(); callback(); }, delay);
+    setTimeout(() => {
+      dots.remove();
+      callback();
+    }, delay);
   }
 
   function getClientInfo() {
@@ -289,6 +291,7 @@ function setupHelpAndDMChat(){
     return"an unknown browser";
   }
 
+  // === Chat flow ===
   helpBubble.addEventListener("click", () => {
     helpChat.classList.toggle("visible");
     if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
@@ -306,12 +309,14 @@ function setupHelpAndDMChat(){
       if (!districtOnline) {
         showTyping(() => {
           addMessage("bot", "We’re currently outside help desk business hours.");
+
           setTimeout(() => {
             const systemMsg = document.createElement("div");
             systemMsg.className = "help-message system";
             systemMsg.textContent = "DISTRICT MANAGER has joined the chat...";
             helpMessages.appendChild(systemMsg);
             helpMessages.scrollTop = helpMessages.scrollHeight;
+
             setTimeout(startDistrictManager, 1800);
           }, 1500);
         }, 1200);
@@ -331,6 +336,7 @@ function setupHelpAndDMChat(){
     }, 1200);
   }
 
+  // === ✅ Working popup handler version ===
   function handleDMResponse(inputText) {
     resetIdleTimer();
     const lower = inputText.toLowerCase();
@@ -348,22 +354,21 @@ function setupHelpAndDMChat(){
     if (productWords.test(lower)) {
       showTyping(() => {
         addMessage("bot", "Would you like to check in the back?");
-        const link = document.createElement("a");
-        link.href = "back.html";
-        link.textContent = "Check in the back →";
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          window.open(
-            "back.html",
-            "backroom",
-            "width=600,height=400,menubar=no,toolbar=no,location=no,status=no,resizable=no"
-          );
-        });
-        const linkMsg = document.createElement("div");
-        linkMsg.className = "help-message bot";
-        linkMsg.appendChild(link);
-        helpMessages.appendChild(linkMsg);
-        helpMessages.scrollTop = helpMessages.scrollHeight;
+        addMessage("bot", `<a href="back.html" class="check-back">Check in the back →</a>`);
+
+        setTimeout(() => {
+          document.querySelectorAll(".check-back").forEach(link => {
+            link.addEventListener("click", (e) => {
+              e.preventDefault();
+              const popup = window.open(
+                "back.html",
+                "backroom",
+                "width=600,height=400,menubar=no,toolbar=no,location=no,status=no,resizable=no"
+              );
+              if (!popup) alert("Please allow pop-ups to continue.");
+            });
+          });
+        }, 100);
       }, 1500);
     } else {
       showTyping(() => {
