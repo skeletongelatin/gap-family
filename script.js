@@ -381,4 +381,52 @@ function setupGapSequence() {
       }, 7000);
     }
   }
+
+  /* ============================================================
+   Deep Page Button Swarm (restored)
+   ============================================================ */
+.storm-btn {
+  position: fixed;
+  font-family: inherit;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: var(--gap-blue);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  transition: opacity 0.3s ease, transform 0.4s ease;
+  filter: brightness(1.2);
+}
+
+.storm-btn.show {
+  opacity: 1;
+  pointer-events: auto;
+  animation: promoPulse 0.8s ease-in-out;
+}
+
+@keyframes promoPulse {
+  0% { transform: scale(0.6) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.storm-btn.fade {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+/* Swarm positions — random placement animation */
+@keyframes swarmDrift {
+  0%, 100% { transform: translate(0,0) rotate(0deg); }
+  50% { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); }
+}
+
+body.deep-looped .storm-btn {
+  animation: swarmDrift 4s ease-in-out infinite;
+}
+
 })();
