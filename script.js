@@ -245,135 +245,146 @@
     document.head.appendChild(style);
   }
 
-  /* ============================================================
-     Unified Helpdesk + District Manager Chat (Final)
-     ============================================================ */
-  function setupHelpAndDMChat(){
-    const helpBubble = q("#help-bubble");
-    const helpChat = q("#help-chat");
-    const helpMessages = helpChat?.querySelector(".help-messages");
-    const helpInput = q("#help-input");
-    const header = helpChat?.querySelector(".help-header");
+/* ============================================================
+   Unified Helpdesk + District Manager Chat (Final w/ join line)
+   ============================================================ */
+function setupHelpAndDMChat(){
+  const helpBubble = q("#help-bubble");
+  const helpChat = q("#help-chat");
+  const helpMessages = helpChat?.querySelector(".help-messages");
+  const helpInput = q("#help-input");
+  const header = helpChat?.querySelector(".help-header");
 
-    if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
+  if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
 
-    let districtOnline = false;
-    let idleTimer = null;
+  let districtOnline = false;
+  let idleTimer = null;
 
-    // === Util helpers ===
-    function addMessage(type, text) {
-      const msg = document.createElement("div");
-      msg.className = `help-message ${type}`;
-      msg.innerHTML = text;
-      helpMessages.appendChild(msg);
-      helpMessages.scrollTop = helpMessages.scrollHeight;
+  // === Util helpers ===
+  function addMessage(type, text) {
+    const msg = document.createElement("div");
+    msg.className = `help-message ${type}`;
+    msg.innerHTML = text;
+    helpMessages.appendChild(msg);
+    helpMessages.scrollTop = helpMessages.scrollHeight;
+  }
+
+  function showTyping(callback, delay = 1000) {
+    const dots = document.createElement("div");
+    dots.className = "dm-typing";
+    dots.innerHTML = "<span></span><span></span><span></span>";
+    helpMessages.appendChild(dots);
+    helpMessages.scrollTop = helpMessages.scrollHeight;
+    setTimeout(() => {
+      dots.remove();
+      callback();
+    }, delay);
+  }
+
+  function getClientInfo() {
+    return `I can see you’re on ${navigator.platform} using ${getBrowserName(navigator.userAgent)}…`;
+  }
+
+  function getBrowserName(ua){
+    if(ua.includes("Chrome"))return"Chrome";
+    if(ua.includes("Firefox"))return"Firefox";
+    if(ua.includes("Safari")&&!ua.includes("Chrome"))return"Safari";
+    if(ua.includes("Edge"))return"Edge";
+    return"an unknown browser";
+  }
+
+  // === Chat flow ===
+  helpBubble.addEventListener("click", () => {
+    helpChat.classList.toggle("visible");
+    if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
+      addMessage("bot", "Our help desk is currently offline. Please leave a message.");
     }
+  });
 
-    function showTyping(callback, delay = 1000) {
-      const dots = document.createElement("div");
-      dots.className = "dm-typing";
-      dots.innerHTML = "<span></span><span></span><span></span>";
-      helpMessages.appendChild(dots);
-      helpMessages.scrollTop = helpMessages.scrollHeight;
-      setTimeout(() => {
-        dots.remove();
-        callback();
-      }, delay);
-    }
-
-    function getClientInfo() {
-      return `I can see you’re on ${navigator.platform} using ${getBrowserName(navigator.userAgent)}…`;
-    }
-
-    function getBrowserName(ua){
-      if(ua.includes("Chrome"))return"Chrome";
-      if(ua.includes("Firefox"))return"Firefox";
-      if(ua.includes("Safari")&&!ua.includes("Chrome"))return"Safari";
-      if(ua.includes("Edge"))return"Edge";
-      return"an unknown browser";
-    }
-
-    // === Chat flow ===
-    helpBubble.addEventListener("click", () => {
-      helpChat.classList.toggle("visible");
-      if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
-        addMessage("bot", "Our help desk is currently offline. Please leave a message.");
-      }
-    });
-
-    helpInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && helpInput.value.trim()) {
-        const text = helpInput.value.trim();
-        helpInput.value = "";
-        addMessage("user", text);
-        clearTimeout(idleTimer);
-
-        if (!districtOnline) {
-          // Normal offline response first
-          showTyping(() => {
-            addMessage("bot", "Our support hours are 9 AM – 5 PM. Please try again later.");
-            setTimeout(startDistrictManager, 2000);
-          }, 1200);
-        } else {
-          handleDMResponse(text);
-        }
-      }
-    });
-
-    function startDistrictManager() {
-      districtOnline = true;
-      header.textContent = "District Manager 🟢";
-      header.classList.add("dm-online");
-      showTyping(() => {
-        addMessage("bot", "What are you looking for?");
-        resetIdleTimer();
-      }, 1200);
-    }
-
-    function handleDMResponse(inputText) {
-      resetIdleTimer();
-      const lower = inputText.toLowerCase();
-      const productWords = /(shirt|jacket|pants|product|item|stock|inventory|jeans|hoodie)/;
-
-      const nonsense = [
-        "that’s not in stock.",
-        "check the shelves again.",
-        "we moved everything recently.",
-        "inventory fluctuates in the dark.",
-        "loss prevention is aware.",
-        "…did you clock in?",
-      ];
-
-      if (productWords.test(lower)) {
-        showTyping(() => {
-          addMessage("bot", "Would you like to check in the back?");
-          addMessage("bot", `<a href='backroom.html'>Check in the back →</a>`);
-        }, 1500);
-      } else {
-        showTyping(() => {
-          addMessage("bot", nonsense[Math.floor(Math.random() * nonsense.length)]);
-        }, 1000);
-      }
-    }
-
-    function resetIdleTimer() {
+  helpInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && helpInput.value.trim()) {
+      const text = helpInput.value.trim();
+      helpInput.value = "";
+      addMessage("user", text);
       clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => {
-        if (districtOnline) {
-          showTyping(() => {
-            const msg = document.createElement("div");
-            msg.className = "help-message bot distort-reveal";
-            msg.textContent = getClientInfo();
-            helpMessages.appendChild(msg);
+
+      if (!districtOnline) {
+        // Normal offline response first
+        showTyping(() => {
+          addMessage("bot", "We’re currently outside help desk business hours.");
+
+          // 👇 Add the system "joined" line here
+          setTimeout(() => {
+            const systemMsg = document.createElement("div");
+            systemMsg.className = "help-message system";
+            systemMsg.textContent = "DISTRICT MANAGER has joined the chat...";
+            helpMessages.appendChild(systemMsg);
             helpMessages.scrollTop = helpMessages.scrollHeight;
 
-            showTyping(() => {
-              addMessage("bot", "So why don't you ask for help! I'm always happy to help for you! Just ask! Help!");
-            }, 1500);
-          }, 1000);
-        }
-      }, 7000);
+            setTimeout(startDistrictManager, 1800);
+          }, 1500);
+        }, 1200);
+      } else {
+        handleDMResponse(text);
+      }
+    }
+  });
+
+  function startDistrictManager() {
+    districtOnline = true;
+    header.textContent = "District Manager 🟢";
+    header.classList.add("dm-online");
+    showTyping(() => {
+      addMessage("bot", "What are you looking for?");
+      resetIdleTimer();
+    }, 1200);
+  }
+
+  function handleDMResponse(inputText) {
+    resetIdleTimer();
+    const lower = inputText.toLowerCase();
+    const productWords = /(shirt|jacket|pants|product|item|stock|inventory|jeans|hoodie)/;
+
+    const nonsense = [
+      "that’s not in stock.",
+      "check the shelves again.",
+      "we moved everything recently.",
+      "inventory fluctuates in the dark.",
+      "loss prevention is aware.",
+      "…did you clock in?",
+    ];
+
+    if (productWords.test(lower)) {
+      showTyping(() => {
+        addMessage("bot", "Would you like to check in the back?");
+        addMessage("bot", `<a href='backroom.html'>Check in the back →</a>`);
+      }, 1500);
+    } else {
+      showTyping(() => {
+        addMessage("bot", nonsense[Math.floor(Math.random() * nonsense.length)]);
+      }, 1000);
     }
   }
+
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      if (districtOnline) {
+        showTyping(() => {
+          const msg = document.createElement("div");
+          msg.className = "help-message bot distort-reveal";
+          msg.textContent = getClientInfo();
+          helpMessages.appendChild(msg);
+          helpMessages.scrollTop = helpMessages.scrollHeight;
+
+          showTyping(() => {
+            addMessage("bot", "So why don't you ask for help! I'm always happy to help for you! Just ask! Help!");
+          }, 1500);
+        }, 1000);
+      }
+    }, 7000);
+  }
+}
+
 
 })();
