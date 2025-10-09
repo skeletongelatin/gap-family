@@ -244,13 +244,13 @@
   }
 
 /* ============================================================
-   Unified Helpdesk + District Manager Chat (Final + Back popup)
+   Unified Helpdesk + District Manager Chat (Popup Safe Version)
    ============================================================ */
 function setupHelpAndDMChat(){
-  const helpBubble = q("#help-bubble");
-  const helpChat = q("#help-chat");
+  const helpBubble = document.querySelector("#help-bubble");
+  const helpChat = document.querySelector("#help-chat");
   const helpMessages = helpChat?.querySelector(".help-messages");
-  const helpInput = q("#help-input");
+  const helpInput = document.querySelector("#help-input");
   const header = helpChat?.querySelector(".help-header");
 
   if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
@@ -279,26 +279,17 @@ function setupHelpAndDMChat(){
     }, delay);
   }
 
-  function getClientInfo() {
-    return `I can see you’re on ${navigator.platform} using ${getBrowserName(navigator.userAgent)}…`;
-  }
-
-  function getBrowserName(ua){
-    if(ua.includes("Chrome"))return"Chrome";
-    if(ua.includes("Firefox"))return"Firefox";
-    if(ua.includes("Safari")&&!ua.includes("Chrome"))return"Safari";
-    if(ua.includes("Edge"))return"Edge";
-    return"an unknown browser";
-  }
-
-  // === Chat flow ===
+  // === Chat bubble open/close ===
   helpBubble.addEventListener("click", () => {
     helpChat.classList.toggle("visible");
+
+    // only show greeting if first open
     if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
       addMessage("bot", "Our help desk is currently offline. Please leave a message.");
     }
   });
 
+  // === Input handling ===
   helpInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && helpInput.value.trim()) {
       const text = helpInput.value.trim();
@@ -326,6 +317,7 @@ function setupHelpAndDMChat(){
     }
   });
 
+  // === DM goes online ===
   function startDistrictManager() {
     districtOnline = true;
     header.textContent = "District Manager 🟢";
@@ -336,8 +328,8 @@ function setupHelpAndDMChat(){
     }, 1200);
   }
 
-  // === ✅ Working popup handler version ===
-    function handleDMResponse(inputText) {
+  // === Response logic ===
+  function handleDMResponse(inputText) {
     resetIdleTimer();
     const lower = inputText.toLowerCase();
     const productWords = /(shirt|jacket|pants|product|item|stock|inventory|jeans|hoodie)/;
@@ -353,31 +345,28 @@ function setupHelpAndDMChat(){
 
     if (productWords.test(lower)) {
       showTyping(() => {
-        // Make the “check in the back” link clickable
         const msg = document.createElement("div");
         msg.className = "help-message bot";
         msg.innerHTML = `<a href="#" class="check-back-link">Check in the back →</a>`;
         helpMessages.appendChild(msg);
         helpMessages.scrollTop = helpMessages.scrollHeight;
 
-        // 🎧 Attach the click handler for the popup + audio
         const link = msg.querySelector(".check-back-link");
         link.addEventListener("click", (e) => {
           e.preventDefault();
 
-          // Play the ambient sound immediately (gesture-safe)
+          // play ambient sound immediately (safe on click)
           const audio = new Audio("assets/backroom.mp3");
           audio.volume = 0.5;
           audio.play().catch(() => {});
 
-          // Open the eerie backroom popup
+          // open popup
           const w = 700, h = 500;
           const left = window.screenX + (window.outerWidth - w) / 2;
           const top = window.screenY + (window.outerHeight - h) / 2;
           const features = `width=${w},height=${h},left=${left},top=${top},popup=yes,resizable=no,scrollbars=no`;
           const popup = window.open("back.html", "backpopup", features);
 
-          // Fallback: if blocked, open in new tab
           if (!popup) window.open("back.html", "_blank");
         });
       }, 1500);
@@ -387,5 +376,15 @@ function setupHelpAndDMChat(){
       }, 1000);
     }
   }
+
+  // === Idle timer ===
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      addMessage("bot", "Still there?");
+    }, 7000);
+  }
+}
+
 
 })();
