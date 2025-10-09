@@ -337,7 +337,7 @@ function setupHelpAndDMChat(){
   }
 
   // === ✅ Working popup handler version ===
-  function handleDMResponse(inputText) {
+    function handleDMResponse(inputText) {
     resetIdleTimer();
     const lower = inputText.toLowerCase();
     const productWords = /(shirt|jacket|pants|product|item|stock|inventory|jeans|hoodie)/;
@@ -353,22 +353,33 @@ function setupHelpAndDMChat(){
 
     if (productWords.test(lower)) {
       showTyping(() => {
-        addMessage("bot", "Would you like to check in the back?");
-        addMessage("bot", `<a href="back.html" class="check-back">Check in the back →</a>`);
+        // Make the “check in the back” link clickable
+        const msg = document.createElement("div");
+        msg.className = "help-message bot";
+        msg.innerHTML = `<a href="#" class="check-back-link">Check in the back →</a>`;
+        helpMessages.appendChild(msg);
+        helpMessages.scrollTop = helpMessages.scrollHeight;
 
-        setTimeout(() => {
-          document.querySelectorAll(".check-back").forEach(link => {
-            link.addEventListener("click", (e) => {
-              e.preventDefault();
-              const popup = window.open(
-                "back.html",
-                "backroom",
-                "width=600,height=400,menubar=no,toolbar=no,location=no,status=no,resizable=no"
-              );
-              if (!popup) alert("Please allow pop-ups to continue.");
-            });
-          });
-        }, 100);
+        // 🎧 Attach the click handler for the popup + audio
+        const link = msg.querySelector(".check-back-link");
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+
+          // Play the ambient sound immediately (gesture-safe)
+          const audio = new Audio("assets/backroom.mp3");
+          audio.volume = 0.5;
+          audio.play().catch(() => {});
+
+          // Open the eerie backroom popup
+          const w = 700, h = 500;
+          const left = window.screenX + (window.outerWidth - w) / 2;
+          const top = window.screenY + (window.outerHeight - h) / 2;
+          const features = `width=${w},height=${h},left=${left},top=${top},popup=yes,resizable=no,scrollbars=no`;
+          const popup = window.open("back.html", "backpopup", features);
+
+          // Fallback: if blocked, open in new tab
+          if (!popup) window.open("back.html", "_blank");
+        });
       }, 1500);
     } else {
       showTyping(() => {
@@ -377,23 +388,4 @@ function setupHelpAndDMChat(){
     }
   }
 
-  function resetIdleTimer() {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => {
-      if (districtOnline) {
-        showTyping(() => {
-          const msg = document.createElement("div");
-          msg.className = "help-message bot distort-reveal";
-          msg.textContent = getClientInfo();
-          helpMessages.appendChild(msg);
-          helpMessages.scrollTop = helpMessages.scrollHeight;
-
-          showTyping(() => {
-            addMessage("bot", "So why don't you ask for help! I'm always happy to help for you! Just ask! Help!");
-          }, 1500);
-        }, 1000);
-      }
-    }, 7000);
-  }
-}
 })();
