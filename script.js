@@ -133,91 +133,62 @@
   }
 
   /* ============================================================
-     Unified GAP sequence — desktop keys + mobile taps (fixed)
-     ============================================================ */
-  function setupGapSequence() {
-    const required = ['g','a','p'];
-    let progress = [];
+   GAP Sequence — desktop typing or mobile tapping (fixed)
+   ============================================================ */
+function setupGapSequence(){
+  const required = ['g','a','p'];
+  let progress = [];
 
-    // prepare a reusable base audio for click (preload)
-    let keyClickBase = null;
-    try {
-      keyClickBase = new Audio('assets/keyclick.mp3');
-      keyClickBase.preload = 'auto';
-    } catch (e) {
-      keyClickBase = null;
-    }
-
-    function playKeyClick() {
-      // Try to play a clone of the preloaded audio (more reliable on mobile)
-      if (keyClickBase) {
-        try {
-          const a = keyClickBase.cloneNode();
-          a.volume = 0.45;
-          a.currentTime = 0;
-          a.play().catch(()=>{});
-          return;
-        } catch (err) {
-          // fall through to fallback creation
-        }
-      }
-      // fallback: create a fresh instance
-      try {
-        const a2 = new Audio('assets/keyclick.mp3');
-        a2.volume = 0.45;
-        a2.play().catch(()=>{});
-      } catch(e){}
-    }
-
-    function pressVisualForKey(k) {
-      const el = q(`.gap-key[data-key="${k}"]`);
-      if (el) {
-        el.classList.add('pressed');
-        setTimeout(()=>el.classList.remove('pressed'), 150);
-      }
-    }
-
-    function checkSequence(arr) {
-      const joined = arr.join('');
-      if (joined === required.join('')) {
-        // small delay lets the click audio start playing before transition
-        setTimeout(()=> triggerLightsOut(), 80);
-        arr.length = 0;
-      } else if (joined !== required.slice(0, arr.length).join('')) {
-        // wrong order: reset
-        arr.length = 0;
-      }
-    }
-
-    // Desktop typing
-    window.addEventListener('keydown', (e) => {
-      if (!e.key) return;
-      const k = e.key.toLowerCase();
-      if (!required.includes(k)) return;
-      // treat this as a user gesture for audio
-      playKeyClick();
-      pressVisualForKey(k);
+  // --- desktop typing ---
+  window.addEventListener('keydown', e=>{
+    const k = e.key.toLowerCase();
+    if(required.includes(k)){
       progress.push(k);
-      checkSequence(progress);
+      if(progress.join('')===required.join('')){
+        playWhisperOnce(true);
+        triggerLightsOut();
+        progress = [];
+      } else if(progress.join('') !== required.slice(0,progress.length).join('')){
+        progress = [];
+      }
+    }
+  });
+
+  // --- mobile / clickable keys ---
+  const keyElements = qAll('.gap-key');
+  if(keyElements.length){
+    let tapProgress = [];
+    keyElements.forEach(k=>{
+      k.addEventListener('click',()=>{
+        // ✅ play click sound (not whisper)
+        const audioClick = new Audio('assets/keyclick.mp3');
+        audioClick.volume = 0.3;
+        audioClick.play().catch(()=>{});
+
+        k.classList.add('pressed');
+        setTimeout(()=>k.classList.remove('pressed'),150);
+
+        // record key
+        tapProgress.push(k.dataset.key);
+        if(tapProgress.join('') === required.join('')){
+          // ✅ only play whisper at full sequence
+          playWhisperOnce(true);
+          triggerLightsOut();
+          tapProgress = [];
+        } else if(tapProgress.join('') !== required.slice(0,tapProgress.length).join('')){
+          tapProgress = [];
+        }
+      });
     });
 
-    // Mobile / pointer taps (delegated)
-    // Use pointerdown for immediate response; check closest .gap-key
-    document.addEventListener('pointerdown', (ev) => {
-      const kEl = ev.target.closest && ev.target.closest('.gap-key');
-      if (!kEl) return;
-      // user gesture: play click, show press, add to sequence
-      playKeyClick();
-      const k = kEl.dataset && kEl.dataset.key;
-      if (!k) return;
-      kEl.classList.add('pressed');
-      setTimeout(()=>kEl.classList.remove('pressed'), 150);
-      progress.push(k);
-      checkSequence(progress);
-      // prevent accidental dragging of images
-      ev.preventDefault();
-    }, { passive: false });
+    // subtle prompt wiggle for mobile
+    if (window.innerWidth <= 768) {
+      keyElements.forEach(k => k.classList.add('prompt'));
+      setTimeout(() => keyElements.forEach(k => k.classList.remove('prompt')), 2500);
+    }
   }
+}
+
 
   /* ============================================================
      District Manager Photo (About)
