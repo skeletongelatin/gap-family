@@ -6,6 +6,71 @@
   <title>Products — thegapfamily</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="script.js"></script>
+
+  <style>
+    /* --- Keep Help Chat Bubble Visible on Mobile --- */
+    #help-bubble {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #111;
+      color: #fff;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #help-bubble:hover {
+      transform: scale(1.08);
+    }
+
+    /* Chat window positioning */
+    #help-chat {
+      position: fixed;
+      bottom: 90px; /* above the bubble */
+      right: 20px;
+      width: 320px;
+      max-width: 90vw;
+      height: 420px;
+      max-height: 70vh;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      z-index: 10000;
+    }
+
+    #help-chat.visible {
+      display: flex;
+    }
+
+    /* Adjust sizing and layout on small screens */
+    @media (max-width: 600px) {
+      #help-chat {
+        right: 10px;
+        bottom: 80px;
+        width: calc(100vw - 20px);
+        height: 60vh;
+      }
+
+      #help-bubble {
+        bottom: 12px;
+        right: 12px;
+        width: 52px;
+        height: 52px;
+      }
+    }
+  </style>
 </head>
 <body class="vintage" data-page="products">
   <header class="site-header">
@@ -66,3 +131,4 @@
   </div>
 </body>
 </html>
+
