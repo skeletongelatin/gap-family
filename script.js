@@ -354,6 +354,100 @@ function setupDeepPage() {
     }, 350); // frequency of spawning
   }
 }
+/* ============================================================
+   DISTRICT MANAGER CHATBOX (Products Page Only)
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  const body = document.body;
+  if (!body || !body.classList.contains('vintage')) return; // simple guard
+
+  const dmNotice = document.getElementById('dm-notice');
+  const dmChat = document.getElementById('dm-chat');
+  const dmMessages = dmChat ? dmChat.querySelector('.dm-messages') : null;
+  const dmInput = dmChat ? dmChat.querySelector('#dm-input') : null;
+
+  if (!dmNotice || !dmChat || !dmMessages || !dmInput) return;
+
+  // Delay before DM appears
+  setTimeout(() => {
+    dmNotice.classList.add('visible');
+    playWhisperOnce(true);
+    setTimeout(() => {
+      dmNotice.classList.remove('visible');
+      dmChat.classList.add('visible');
+      addDMMessage("👋 District Manager here.");
+      setTimeout(() => addDMMessage("What are you looking for?"), 2000);
+    }, 3000);
+  }, 8000 + Math.random() * 4000);
+
+  // === Input handling ===
+  dmInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && dmInput.value.trim() !== '') {
+      const userMsg = dmInput.value.trim();
+      addUserMessage(userMsg);
+      dmInput.value = '';
+
+      handleDMResponse(userMsg.toLowerCase());
+    }
+  });
+
+  // === Message builders ===
+  function addUserMessage(text) {
+    const el = document.createElement('div');
+    el.className = 'msg user';
+    el.textContent = text;
+    dmMessages.appendChild(el);
+    scrollToBottom();
+  }
+
+  function addDMMessage(text, glitch = false) {
+    const el = document.createElement('div');
+    el.className = 'msg dm';
+    el.textContent = text;
+    dmMessages.appendChild(el);
+    scrollToBottom();
+
+    // subtle glitch flicker
+    if (glitch) {
+      el.classList.add('flicker');
+      setTimeout(() => el.classList.remove('flicker'), 300);
+    }
+  }
+
+  function scrollToBottom() {
+    dmMessages.scrollTop = dmMessages.scrollHeight;
+  }
+
+  // === Response logic ===
+  function handleDMResponse(input) {
+    const nonsense = [
+      "that’s not in stock.",
+      "check the shelves again.",
+      "we moved everything recently.",
+      "inventory fluctuates in the dark.",
+      "loss prevention is aware.",
+      "…did you clock in?",
+    ];
+
+    if (/shirt|jean|jacket|hoodie|product|item|sale/.test(input)) {
+      setTimeout(() => addDMMessage("Would you like to check in the back?", true), 1000);
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = 'backroom.html';
+        link.textContent = "→ Check in the back";
+        link.className = 'backroom-link';
+        const el = document.createElement('div');
+        el.className = 'msg dm';
+        el.appendChild(link);
+        dmMessages.appendChild(el);
+        scrollToBottom();
+      }, 3500);
+    } else {
+      const msg = nonsense[Math.floor(Math.random() * nonsense.length)];
+      setTimeout(() => addDMMessage(msg, Math.random() < 0.5), 800 + Math.random() * 1200);
+    }
+  }
+});
 
 
 
