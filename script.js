@@ -246,119 +246,43 @@
   }
 
   /* ============================================================
-     Helpdesk + DM Chat logic
+     Unified Helpdesk + District Manager Chat (Final)
      ============================================================ */
   function setupHelpAndDMChat(){
     const helpBubble = q("#help-bubble");
     const helpChat = q("#help-chat");
     const helpMessages = helpChat?.querySelector(".help-messages");
     const helpInput = q("#help-input");
-    const dmNotice = q("#dm-notice");
-    const dmChat = q("#dm-chat");
-    const dmMessages = dmChat?.querySelector(".dm-messages");
-    const dmInput = q("#dm-input");
+    const header = helpChat?.querySelector(".help-header");
 
-    if (!helpBubble || !helpChat || !helpMessages || !helpInput || !dmNotice || !dmChat || !dmMessages || !dmInput) return;
+    if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
 
-    helpBubble.addEventListener("click",()=>helpChat.classList.toggle("visible"));
+    let districtOnline = false;
+    let idleTimer = null;
 
-    helpInput.addEventListener("keydown",(e)=>{
-      if(e.key==="Enter"&&helpInput.value.trim()!==""){
-        const text=helpInput.value.trim();
-        addHelpMessage("user",text);
-        helpInput.value="";
-        setTimeout(()=>addHelpMessage("bot","Our help desk is currently offline. Please check back during business hours."),800);
-        setTimeout(()=>dmNotice.classList.add("visible"),1800);
-      }
-    });
-
-    dmNotice.addEventListener("click",()=>{
-      dmNotice.classList.remove("visible");
-      dmChat.classList.add("visible");
-      dmTyping(()=>addDMMessage("dm","What are you looking for?"),1200);
-    });
-
-    dmInput.addEventListener("keydown",(e)=>{
-      if(e.key==="Enter"&&dmInput.value.trim()!==""){
-        const text=dmInput.value.trim();
-        addDMMessage("user",text);
-        dmInput.value="";
-        handleDMResponse(text);
-      }
-    });
-
-    function addHelpMessage(type,text){
-      const msg=document.createElement("div");
-      msg.classList.add("help-message",type);
-      msg.textContent=text;
+    // === Util helpers ===
+    function addMessage(type, text) {
+      const msg = document.createElement("div");
+      msg.className = `help-message ${type}`;
+      msg.innerHTML = text;
       helpMessages.appendChild(msg);
-      helpMessages.scrollTop=helpMessages.scrollHeight;
+      helpMessages.scrollTop = helpMessages.scrollHeight;
     }
 
-    function addDMMessage(type,text){
-      const msg=document.createElement("div");
-      msg.classList.add("dm-message",type);
-      msg.textContent=text;
-      dmMessages.appendChild(msg);
-      dmMessages.scrollTop=dmMessages.scrollHeight;
+    function showTyping(callback, delay = 1000) {
+      const dots = document.createElement("div");
+      dots.className = "dm-typing";
+      dots.innerHTML = "<span></span><span></span><span></span>";
+      helpMessages.appendChild(dots);
+      helpMessages.scrollTop = helpMessages.scrollHeight;
+      setTimeout(() => {
+        dots.remove();
+        callback();
+      }, delay);
     }
 
-    function dmTyping(callback,delay=1200){
-      const typingEl=document.createElement("div");
-      typingEl.classList.add("dm-typing");
-      typingEl.innerHTML="<span></span><span></span><span></span>";
-      dmMessages.appendChild(typingEl);
-      dmMessages.scrollTop=dmMessages.scrollHeight;
-      setTimeout(()=>{typingEl.remove();callback();},delay);
-    }
-
-    function handleDMResponse(input){
-      const lower=input.toLowerCase();
-      const productKeywords=["shirt","jeans","jacket","pants","khakis","sweater","hoodie"];
-      const nonsense=[
-        "that’s not in stock.",
-        "check the shelves again.",
-        "we moved everything recently.",
-        "inventory fluctuates in the dark.",
-        "loss prevention is aware.",
-        "…did you clock in?"
-      ];
-      dmTyping(()=>{
-        if(productKeywords.some(w=>lower.includes(w))){
-          addDMMessage("dm","Would you like to check in the back?");
-          const link=document.createElement("a");
-          link.href="backroom.html";
-          link.textContent="Check in the back →";
-          link.style.display="block";
-          link.style.color="#003366";
-          link.style.marginTop="0.3rem";
-          dmMessages.appendChild(link);
-        } else {
-          addDMMessage("dm",nonsense[Math.floor(Math.random()*nonsense.length)]);
-        }
-      });
-    }
-
-    // idle reveal
-    let idleTimer;
-    const resetIdle=()=>{
-      clearTimeout(idleTimer);
-      idleTimer=setTimeout(()=>revealClientInfo(),7000);
-    };
-    document.addEventListener("mousemove",resetIdle);
-    document.addEventListener("keydown",resetIdle);
-    resetIdle();
-
-    function revealClientInfo(){
-      const ua=navigator.userAgent;
-      const platform=navigator.platform||"unknown device";
-      dmTyping(()=>{
-        const msg=document.createElement("div");
-        msg.classList.add("dm-message","dm","distort-reveal");
-        msg.textContent=`I can see you’re on ${platform} using ${getBrowserName(ua)}…`;
-        dmMessages.appendChild(msg);
-        dmTyping(()=>addDMMessage("dm","So why don’t you ask for help! I’m always happy to help for you! Just ask! Help!"),1800);
-      },1500);
+    function getClientInfo() {
+      return `I can see you’re on ${navigator.platform} using ${getBrowserName(navigator.userAgent)}…`;
     }
 
     function getBrowserName(ua){
@@ -367,6 +291,88 @@
       if(ua.includes("Safari")&&!ua.includes("Chrome"))return"Safari";
       if(ua.includes("Edge"))return"Edge";
       return"an unknown browser";
+    }
+
+    // === Chat flow ===
+    helpBubble.addEventListener("click", () => {
+      helpChat.classList.toggle("visible");
+      if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
+        addMessage("bot", "Our help desk is currently offline. Please leave a message.");
+      }
+    });
+
+    helpInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && helpInput.value.trim()) {
+        const text = helpInput.value.trim();
+        helpInput.value = "";
+        addMessage("user", text);
+        clearTimeout(idleTimer);
+
+        if (!districtOnline) {
+          // Normal offline response first
+          showTyping(() => {
+            addMessage("bot", "Our support hours are 9 AM – 5 PM. Please try again later.");
+            setTimeout(startDistrictManager, 2000);
+          }, 1200);
+        } else {
+          handleDMResponse(text);
+        }
+      }
+    });
+
+    function startDistrictManager() {
+      districtOnline = true;
+      header.textContent = "District Manager 🟢";
+      header.classList.add("dm-online");
+      showTyping(() => {
+        addMessage("bot", "What are you looking for?");
+        resetIdleTimer();
+      }, 1200);
+    }
+
+    function handleDMResponse(inputText) {
+      resetIdleTimer();
+      const lower = inputText.toLowerCase();
+      const productWords = /(shirt|jacket|pants|product|item|stock|inventory|jeans|hoodie)/;
+
+      const nonsense = [
+        "that’s not in stock.",
+        "check the shelves again.",
+        "we moved everything recently.",
+        "inventory fluctuates in the dark.",
+        "loss prevention is aware.",
+        "…did you clock in?",
+      ];
+
+      if (productWords.test(lower)) {
+        showTyping(() => {
+          addMessage("bot", "Would you like to check in the back?");
+          addMessage("bot", `<a href='backroom.html'>Check in the back →</a>`);
+        }, 1500);
+      } else {
+        showTyping(() => {
+          addMessage("bot", nonsense[Math.floor(Math.random() * nonsense.length)]);
+        }, 1000);
+      }
+    }
+
+    function resetIdleTimer() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        if (districtOnline) {
+          showTyping(() => {
+            const msg = document.createElement("div");
+            msg.className = "help-message bot distort-reveal";
+            msg.textContent = getClientInfo();
+            helpMessages.appendChild(msg);
+            helpMessages.scrollTop = helpMessages.scrollHeight;
+
+            showTyping(() => {
+              addMessage("bot", "So why don't you ask for help! I'm always happy to help for you! Just ask! Help!");
+            }, 1500);
+          }, 1000);
+        }
+      }, 7000);
     }
   }
 
