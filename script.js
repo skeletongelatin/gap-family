@@ -44,11 +44,12 @@
     if (localStorage.getItem(deepLoopKey) === '1')
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
 
-    // === Deep Page special ===
-    if (body.dataset.page === 'deep') setupDeepPage();
+    if (body.dataset.page === 'deep') setupDeepPage?.();
 
-    // Inject distortion CSS once
     injectDistortionCSS();
+
+    // initialize helpdesk + DM chat
+    setupHelpdeskAndDM();
   });
 
   /* ============================================================
@@ -61,7 +62,6 @@
         setTimeout(()=>el.classList.remove('shift-small'),1200+Math.random()*2400);
       }
     });
-
     qAll('.nav a,.promo,.product,.btn').forEach(el=>{
       el.addEventListener('mouseover',()=>{
         if(Math.random()<0.30){
@@ -140,8 +140,6 @@
   function setupGapSequence(){
     const required = ['g','a','p'];
     let progress = [];
-
-    // desktop typing
     window.addEventListener('keydown', e=>{
       const k = e.key.toLowerCase();
       if(required.includes(k)){
@@ -155,19 +153,15 @@
         }
       }
     });
-
-    // mobile taps
     const keyElements = qAll('.gap-key');
     if(keyElements.length){
       let tapProgress = [];
       keyElements.forEach(k=>{
         k.addEventListener('click',()=>{
           const audioClick=new Audio('assets/keyclick.mp3');
-          audioClick.volume=0.2;
-          audioClick.play().catch(()=>{});
+          audioClick.volume=0.2; audioClick.play().catch(()=>{});
           k.classList.add('pressed');
           setTimeout(()=>k.classList.remove('pressed'),150);
-
           tapProgress.push(k.dataset.key);
           if(tapProgress.join('')===required.join('')){
             playWhisperOnce(true);
@@ -252,8 +246,6 @@
     setTimeout(()=>{window.location.href='deep.html';},2200);
   }
 
-
-
   /* ============================================================
      Distortion CSS Injector
      ============================================================ */
@@ -272,101 +264,95 @@
         85% { filter: blur(1px) contrast(200%); }
         100% { filter: none; opacity: 1; transform: none; }
       }
+      .dm-distort {
+        position:absolute;inset:0;background:repeating-linear-gradient(0deg,#fff 0px,#fff 2px,#ccc 3px,#fff 5px);
+        opacity:0.4;animation:glitchFlash 1.2s ease-in-out;
+      }
+      @keyframes glitchFlash {
+        0%,100%{opacity:0;}20%,40%,60%,80%{opacity:0.8;transform:translateY(-1px);}
+        30%,50%,70%,90%{opacity:0.8;transform:translateY(1px);}
+      }
     `;
     document.head.appendChild(style);
   }
 
+  /* ============================================================
+     Helpdesk + District Manager Chat
+     ============================================================ */
+  function setupHelpdeskAndDM(){
+    const helpBubble = document.getElementById("help-bubble");
+    const helpChat = document.getElementById("help-chat");
+    const helpMessages = helpChat?.querySelector(".help-messages");
+    const helpInput = document.getElementById("help-input");
 
-   document.addEventListener("DOMContentLoaded", () => {
-  const yearEl = document.getElementById("year2");
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+    const dmNotice = document.getElementById("dm-notice");
+    const dmChat = document.getElementById("dm-chat");
+    const dmMessages = dmChat?.querySelector(".dm-messages");
+    const dmInput = document.getElementById("dm-input");
 
-  const helpBubble = document.getElementById("help-bubble");
-  const helpChat = document.getElementById("help-chat");
-  const helpMessages = helpChat?.querySelector(".help-messages");
-  const helpInput = document.getElementById("help-input");
+    if (!helpBubble || !helpChat || !helpMessages || !helpInput || !dmNotice || !dmChat || !dmMessages || !dmInput) return;
 
-  const dmNotice = document.getElementById("dm-notice");
-  const dmChat = document.getElementById("dm-chat");
-  const dmMessages = dmChat?.querySelector(".dm-messages");
-  const dmInput = document.getElementById("dm-input");
+    let dmActive = false;
+    let idleTimer;
 
-  if (!helpBubble || !helpChat || !helpMessages || !helpInput || !dmNotice || !dmChat || !dmMessages || !dmInput) return;
+    helpBubble.addEventListener("click", () => {
+      helpChat.classList.toggle("visible");
+      if (helpMessages.children.length === 0) {
+        addHelpMessage("system", "Our help desk is currently closed. Please leave a message.");
+      }
+      helpInput.focus();
+    });
 
-  // --- Toggle help chat ---
-  helpBubble.addEventListener("click", () => {
-    helpChat.classList.toggle("visible");
-  });
+    helpInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && helpInput.value.trim() !== "") {
+        const msg = helpInput.value.trim();
+        addHelpMessage("user", msg);
+        helpInput.value = "";
+        setTimeout(()=> addHelpMessage("system", "Our help desk is currently outside of business hours."), 800);
+        setTimeout(()=> triggerDM(), 1800);
+      }
+    });
 
-  // --- Help message submission ---
-  helpInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && helpInput.value.trim() !== "") {
-      const text = helpInput.value.trim();
-      addHelpMessage("user", text);
-      helpInput.value = "";
-      setTimeout(() => {
-        addHelpMessage("bot", "Our help desk is currently offline. Please check back during business hours.");
-      }, 800);
-
-      // trigger district manager sequence after 1 second
-      setTimeout(() => {
-        dmNotice.classList.add("visible");
-      }, 1800);
+    function addHelpMessage(type, text){
+      const div=document.createElement("div");
+      div.className=`help-message ${type}`;
+      div.textContent=text;
+      helpMessages.appendChild(div);
+      helpMessages.scrollTop=helpMessages.scrollHeight;
     }
-  });
 
-  // === District Manager Chat Sequence ===
-  dmNotice.addEventListener("click", () => {
-    dmNotice.style.display = "none";
-    dmChat.classList.add("visible");
-    addDMMessage("system", "District Manager is typing...");
-    setTimeout(() => {
-      dmMessages.innerHTML = "";
-      addDMMessage("dm", "What are you looking for?");
-    }, 1500);
-  });
-
-  dmInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && dmInput.value.trim() !== "") {
-      const text = dmInput.value.trim();
-      addDMMessage("user", text);
-      dmInput.value = "";
-      handleDMResponse(text);
+    function triggerDM(){
+      if(dmActive)return;
+      dmActive=true;
+      dmNotice.classList.add("visible");
+      setTimeout(()=>{
+        dmNotice.classList.remove("visible");
+        dmChat.classList.add("visible");
+        dmTyping();
+        setTimeout(()=>{
+          addDMMessage("manager","What are you looking for?");
+          watchIdle();
+        },1500);
+      },2000);
     }
-  });
 
-  // --- Helper functions ---
-  function addHelpMessage(type, text) {
-    const msg = document.createElement("div");
-    msg.classList.add("help-message", type);
-    msg.textContent = text;
-    helpMessages.appendChild(msg);
-    helpMessages.scrollTop = helpMessages.scrollHeight;
-  }
+    function addDMMessage(sender,text){
+      const div=document.createElement("div");
+      div.className=`dm-message ${sender==="user"?"user":""}`;
+      div.textContent=text;
+      dmMessages.appendChild(div);
+      dmMessages.scrollTop=dmMessages.scrollHeight;
+    }
 
-  function addDMMessage(type, text) {
-    const msg = document.createElement("div");
-    msg.classList.add("dm-message", type);
-    msg.textContent = text;
-    dmMessages.appendChild(msg);
-    dmMessages.scrollTop = dmMessages.scrollHeight;
-  }
+    function dmTyping(){
+      const typing=document.createElement("div");
+      typing.className="dm-typing";
+      typing.innerHTML="<span></span><span></span><span></span>";
+      dmMessages.appendChild(typing);
+      dmMessages.scrollTop=dmMessages.scrollHeight;
+      setTimeout(()=>typing.remove(),1500);
+    }
 
-  function dmTyping(callback, delay = 1200) {
-    const typingEl = document.createElement("div");
-    typingEl.classList.add("dm-typing");
-    typingEl.innerHTML = "<span></span><span></span><span></span>";
-    dmMessages.appendChild(typingEl);
-    dmMessages.scrollTop = dmMessages.scrollHeight;
-    setTimeout(() => {
-      typingEl.remove();
-      callback();
-    }, delay);
-  }
-
-  function handleDMResponse(input) {
-    const lower = input.toLowerCase();
-    const productKeywords = ["shirt", "jeans", "jacket", "pants", "khakis", "sweater", "hoodie"];
     const nonsense = [
       "that’s not in stock.",
       "check the shelves again.",
@@ -376,58 +362,51 @@
       "…did you clock in?",
     ];
 
-    dmTyping(() => {
-      if (productKeywords.some(word => lower.includes(word))) {
-        addDMMessage("dm", "Would you like to check in the back?");
-        const link = document.createElement("a");
-        link.href = "backroom.html";
-        link.textContent = "Check in the back →";
-        link.style.display = "block";
-        link.style.color = "#003366";
-        link.style.marginTop = "0.3rem";
-        dmMessages.appendChild(link);
-      } else {
-        addDMMessage("dm", nonsense[Math.floor(Math.random() * nonsense.length)]);
+    dmInput.addEventListener("keydown",(e)=>{
+      if(e.key==="Enter"&&dmInput.value.trim()!==""){
+        const input=dmInput.value.trim();
+        addDMMessage("user",input);
+        dmInput.value="";
+        resetIdle();
+        dmTyping();
+        setTimeout(()=>{
+          if(/shirt|jeans|jacket|item|product|stock/i.test(input)){
+            addDMMessage("manager","Would you like to check in the back?");
+            const link=document.createElement("a");
+            link.href="backroom.html";
+            link.textContent="→ Check in the back";
+            link.className="dm-message system";
+            dmMessages.appendChild(link);
+          }else{
+            const rand=nonsense[Math.floor(Math.random()*nonsense.length)];
+            addDMMessage("manager",rand);
+          }
+          watchIdle();
+        },1400);
       }
     });
+
+    function watchIdle(){
+      clearTimeout(idleTimer);
+      idleTimer=setTimeout(()=>revealInfo(),7000);
+    }
+
+    function resetIdle(){
+      clearTimeout(idleTimer);
+    }
+
+    function revealInfo(){
+      const ua=navigator.userAgent;
+      const platform=navigator.platform;
+      const lang=navigator.language;
+      const info=`I can see that you're on ${platform}, using ${ua.split(" ")[0]}, language: ${lang}. So why don't you ask for help? I'm always happy to help for you! Just ask! Help!`;
+      const distort=document.createElement("div");
+      distort.className="dm-distort";
+      dmChat.appendChild(distort);
+      setTimeout(()=>distort.remove(),2000);
+      dmTyping();
+      setTimeout(()=>addDMMessage("manager",info),1800);
+    }
   }
-
-  // --- Reveal client info if idle ---
-  let idleTimer;
-  const resetIdle = () => {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => revealClientInfo(), 7000);
-  };
-  document.addEventListener("mousemove", resetIdle);
-  document.addEventListener("keydown", resetIdle);
-  resetIdle();
-
-  function revealClientInfo() {
-    const ua = navigator.userAgent;
-    const platform = navigator.platform || "unknown device";
-    const dmDistort = document.createElement("div");
-    dmDistort.classList.add("dm-distort");
-    dmChat.appendChild(dmDistort);
-
-    dmTyping(() => {
-      addDMMessage("dm", `I can see you’re on ${platform} using ${getBrowserName(ua)}…`);
-      dmTyping(() => {
-        addDMMessage("dm", "So why don’t you ask for help! I’m always happy to help for you! Just ask! Help!");
-      }, 1800);
-    }, 1500);
-
-    setTimeout(() => dmDistort.remove(), 2000);
-  }
-
-  function getBrowserName(ua) {
-    if (ua.includes("Chrome")) return "Chrome";
-    if (ua.includes("Firefox")) return "Firefox";
-    if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
-    if (ua.includes("Edge")) return "Edge";
-    return "an unknown browser";
-  }
-});
-
 
 })();
-
