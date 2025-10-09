@@ -672,6 +672,45 @@ body.rumble {
 @media (min-width: 769px) {
   .mobile-only { display: none; }
 }
+/* ============================================================
+   Floating Chat Bubble (Products Only)
+   ============================================================ */
+.check-bubble {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+}
+
+.check-bubble button {
+  background: var(--gap-blue);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.check-bubble button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 768px) {
+  .check-bubble {
+    bottom: 16px;
+    right: 16px;
+  }
+  .check-bubble button {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+}
 
 /* ============================================================
    FINAL visibility fix for GAP section
