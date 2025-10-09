@@ -130,7 +130,7 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   }
 
   /* ============================================================
-  GAP sequence
+  GAP sequence (desktop)
   ============================================================ */
   function setupGapSequence(){
     const required = ['g','a','p'];
@@ -140,11 +140,17 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
       if(required.includes(k)){
         progress.push(k);
         if(progress.join('')===required.join('')){
-          playWhisperOnce(true);
+          const click = new Audio('assets/keyclick.mp3');
+          click.volume = 0.4;
+          click.play().catch(()=>{});
           triggerLightsOut();
           progress = [];
         } else if(progress.join('') !== required.slice(0,progress.length).join('')){
           progress = [];
+        } else {
+          const click = new Audio('assets/keyclick.mp3');
+          click.volume = 0.4;
+          click.play().catch(()=>{});
         }
       }
     });
@@ -352,32 +358,31 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   /* ============================================================
    Mobile GAP Key Sequence (touch version)
    ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-  const mobileKeys = document.querySelectorAll(".gap-key");
-  if (!mobileKeys.length) return;
+  document.addEventListener("DOMContentLoaded", () => {
+    const mobileKeys = document.querySelectorAll(".gap-key");
+    if (!mobileKeys.length) return;
 
-  let seq = [];
-  mobileKeys.forEach(key => {
-    key.addEventListener("click", () => {
-      const sound = new Audio("assets/whisper-clip.mp3");
-      sound.volume = 0.4;
-      sound.play().catch(() => {});
-      const val = key.dataset.key;
-      seq.push(val);
-      key.style.transform = "translateY(4px)";
-      setTimeout(() => key.style.transform = "", 150);
+    let seq = [];
+    mobileKeys.forEach(key => {
+      key.addEventListener("click", () => {
+        const sound = new Audio("assets/keyclick.mp3"); // fixed from whisper
+        sound.volume = 0.4;
+        sound.play().catch(() => {});
+        const val = key.dataset.key;
+        seq.push(val);
+        key.style.transform = "translateY(4px)";
+        setTimeout(() => key.style.transform = "", 150);
 
-      if (seq.join("") === "gap") {
-        // triggers same lights-out transition as desktop
-        if (typeof triggerLightsOut === "function") {
-          triggerLightsOut();
+        if (seq.join("") === "gap") {
+          if (typeof triggerLightsOut === "function") {
+            triggerLightsOut();
+          }
+          seq = [];
+        } else if (!"gap".startsWith(seq.join(""))) {
+          seq = [];
         }
-        seq = [];
-      } else if (!"gap".startsWith(seq.join(""))) {
-        seq = [];
-      }
+      });
     });
   });
-});
 
 })();
