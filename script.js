@@ -303,7 +303,7 @@ function setupDeepPage() {
 
   /* === Create random buttons after final stage === */
   function startButtonStorm() {
-    const phrases = ["no", "now open", "on sale", "today only", "gap.com"];
+    const phrases = ["no", "now open", "on sale", "today only", "let go of me"];
     const body = document.body;
 
     let totalSpawned = 0;
