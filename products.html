@@ -6,155 +6,6 @@
   <title>Products — thegapfamily</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="script.js"></script>
-
-  <style>
-    /* --- Global overflow fix --- */
-    html, body {
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-
-    /* --- Keep Help Chat Bubble Visible on Mobile --- */
-    #help-bubble {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 9999;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: #111;
-      color: #fff;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-      cursor: pointer;
-      transition: transform 0.2s ease, background 0.3s ease;
-      user-select: none;
-    }
-
-    #help-bubble:hover {
-      transform: scale(1.08);
-      background: #222;
-    }
-
-    /* Chat window styling */
-    #help-chat {
-      position: fixed;
-      bottom: 90px;
-      right: 20px;
-      width: 320px;
-      max-width: calc(100vw - 30px);
-      height: 420px;
-      max-height: 70vh;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      overflow: hidden;
-      display: none;
-      flex-direction: column;
-      z-index: 10000;
-      transform: translateY(40px);
-      opacity: 0;
-      transition: all 0.3s ease;
-    }
-
-    #help-chat.visible {
-      display: flex;
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .help-header {
-      background: #003366;
-      color: #fff;
-      padding: 10px;
-      font-weight: bold;
-      text-align: center;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .help-messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      font-size: 14px;
-    }
-
-    .help-message {
-      margin-bottom: 8px;
-      line-height: 1.4;
-    }
-
-    .help-message.user {
-      text-align: right;
-      color: #003366;
-    }
-
-    .help-message.bot {
-      text-align: left;
-      color: #000;
-    }
-
-    .help-message.system {
-      font-style: italic;
-      text-align: center;
-      color: #666;
-    }
-
-    #help-input {
-      border: none;
-      border-top: 1px solid #ddd;
-      padding: 10px;
-      font-size: 14px;
-      width: 100%;
-      box-sizing: border-box;
-      outline: none;
-    }
-
-    /* Typing dots */
-    .dm-typing {
-      display: flex;
-      gap: 4px;
-      justify-content: flex-start;
-      padding: 0 10px;
-    }
-
-    .dm-typing span {
-      width: 6px;
-      height: 6px;
-      background: #888;
-      border-radius: 50%;
-      animation: typingBlink 1.2s infinite ease-in-out;
-    }
-
-    .dm-typing span:nth-child(2) { animation-delay: 0.2s; }
-    .dm-typing span:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes typingBlink {
-      0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
-      40% { opacity: 1; transform: translateY(-3px); }
-    }
-
-    /* Responsive tweaks */
-    @media (max-width: 600px) {
-      #help-chat {
-        right: 10px;
-        bottom: 80px;
-        width: calc(100vw - 20px);
-        height: 60vh;
-      }
-
-      #help-bubble {
-        bottom: 12px;
-        right: 12px;
-        width: 52px;
-        height: 52px;
-      }
-    }
-  </style>
 </head>
 <body class="vintage" data-page="products">
   <header class="site-header">
@@ -196,24 +47,35 @@
     </div>
   </footer>
 
-  <!-- === Help Desk Bubble + Chat === -->
-  <div id="help-bubble" class="help-bubble">💬</div>
-
-  <div id="help-chat" class="help-chat">
-    <div class="help-header">Customer Support</div>
-    <div class="help-messages"></div>
-    <input type="text" id="help-input" placeholder="Type your message..." autocomplete="off">
+  <!-- === Floating Help Bubble (Products Only) === -->
+  <div id="check-bubble" class="check-bubble">
+    <button id="check-toggle" aria-label="Chat">💬</button>
   </div>
 
-  <!-- === District Manager Notice + Chat === -->
-  <div id="dm-notice" class="dm-notice">District Manager Online</div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('check-toggle');
+      if (!toggle) return;
 
-  <div id="dm-chat" class="dm-chat">
-    <div class="dm-header">District Manager</div>
-    <div class="dm-messages"></div>
-    <input type="text" id="dm-input" placeholder="Type your message..." autocomplete="off">
-  </div>
+      toggle.addEventListener('click', () => {
+        const width = 420;
+        const height = 280;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+
+        const popup = window.open(
+          'back.html',
+          'backroom',
+          `width=${width},height=${height},left=${left},top=${top},popup=yes`
+        );
+
+        // optional chime
+        const sound = new Audio('assets/check-in.mp3');
+        sound.volume = 0.5;
+        sound.play().catch(() => {});
+      });
+    });
+  </script>
 </body>
 </html>
-
 
