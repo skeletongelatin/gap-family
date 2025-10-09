@@ -40,7 +40,7 @@
 </head>
 <body>
   <img id="image" src="assets/backroom.jpg" alt="storage room">
-  <audio id="ambient" src="assets/backroom.mp3"></audio>
+  <audio id="ambient" src="assets/backroom.mp3" preload="auto"></audio>
 
   <script>
     const img = document.getElementById('image');
@@ -52,13 +52,28 @@
       img.classList.add('flicker');
     }, 1000);
 
-    // play ambient sound
-    setTimeout(() => {
-      audio.volume = 0.5;
-      audio.play().catch(() => {}); // ignore autoplay block
-    }, 2000);
+    // fade-in ambient sound (ensures it plays even if autoplay initially blocked)
+    function fadeInAudio() {
+      audio.volume = 0;
+      const target = 0.5;
+      audio.play().then(() => {
+        const fade = setInterval(() => {
+          if (audio.volume < target) {
+            audio.volume = Math.min(audio.volume + 0.05, target);
+          } else {
+            clearInterval(fade);
+          }
+        }, 200);
+      }).catch(() => {
+        // fallback if autoplay blocks until interaction
+        window.addEventListener('click', fadeInAudio, { once: true });
+      });
+    }
 
-    // try to close popup after 10s
+    // try playing sound shortly after open
+    setTimeout(fadeInAudio, 500);
+
+    // close popup after 10s
     setTimeout(() => {
       window.close();
     }, 10000);
