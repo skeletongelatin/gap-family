@@ -624,6 +624,15 @@ body.rumble {
   text-align: right;
 }
 
+.help-message.system {
+  background: none;
+  color: #777;
+  font-style: italic;
+  text-align: center;
+  font-size: 0.8rem;
+  padding: 0.3rem 0;
+}
+
 
 /* ============================================================
    FINAL visibility fix for GAP section
