@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Backroom</title>
   <style>
     html, body {
@@ -70,10 +71,10 @@
       });
     }
 
-    // try playing sound shortly after open
+    // attempt playback shortly after open
     setTimeout(fadeInAudio, 500);
 
-    // close popup after 10s
+    // close popup after ~10 seconds
     setTimeout(() => {
       window.close();
     }, 10000);
