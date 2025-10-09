@@ -1,5 +1,5 @@
 /* ============================================================
-   script.js  (The Gap Family, Oct 2025 build, DM fixed + popup)
+   script.js  (The Gap Family, Oct 2025 build, DM fixed + backroom popup)
    ============================================================ */
 (function(){
   const PAGE_IDS = ['index','products','about'];
@@ -44,12 +44,15 @@
     if (localStorage.getItem(deepLoopKey) === '1')
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
 
-    if (body.dataset.page === 'deep') setupDeepPage?.();
+    if (body.dataset.page === 'deep') setupDeepPage();
 
     injectDistortionCSS();
     setupHelpAndDMChat();
   });
 
+  /* ============================================================
+     Surface quirks
+     ============================================================ */
   function applySurfaceQuirks(){
     qAll('.promo,.product,.member').forEach(el=>{
       if (Math.random()<0.28){
@@ -57,6 +60,7 @@
         setTimeout(()=>el.classList.remove('shift-small'),1200+Math.random()*2400);
       }
     });
+
     qAll('.nav a,.promo,.product,.btn').forEach(el=>{
       el.addEventListener('mouseover',()=>{
         if(Math.random()<0.30){
@@ -71,6 +75,9 @@
     });
   }
 
+  /* ============================================================
+     Deep Loop visuals
+     ============================================================ */
   function enableDeepLoop(reason){
     try{localStorage.setItem(deepLoopKey,'1');}catch(e){}
     applyDeepLoopVisuals();
@@ -82,6 +89,9 @@
     document.body.classList.add('deep-loop');
   }
 
+  /* ============================================================
+     Gradual transition bright→dim
+     ============================================================ */
   function setupGradualTransition(){
     if(Math.random()<0.06&&localStorage.getItem(deepLoopKey)!=='1'){
       setTimeout(()=>{
@@ -95,6 +105,9 @@
     }
   }
 
+  /* ============================================================
+     Logo click
+     ============================================================ */
   function setupLogoSequence(){
     const logo=q('.logo img');
     if(!logo)return;
@@ -108,6 +121,9 @@
     });
   }
 
+  /* ============================================================
+     Manual chime test (C)
+     ============================================================ */
   function setupChimeTest(){
     window.addEventListener('keydown',e=>{
       if(e.key.toLowerCase()==='c' && !sessionStorage.getItem(chimePlayedKey)){
@@ -117,6 +133,9 @@
     });
   }
 
+  /* ============================================================
+     GAP Sequence
+     ============================================================ */
   function setupGapSequence(){
     const required = ['g','a','p'];
     let progress = [];
@@ -135,6 +154,9 @@
     });
   }
 
+  /* ============================================================
+     District Manager Photo
+     ============================================================ */
   function setupDistrictManagerPhoto(){
     const img = q('img[src*="employee2.jpg"]');
     if(!img)return;
@@ -156,6 +178,9 @@
     });
   }
 
+  /* ============================================================
+     Whisper chime
+     ============================================================ */
   function playWhisperOnce(force=false){
     if(!force && Math.random()>0.06)return;
     const audio=new Audio('assets/whisper-clip.mp3');
@@ -163,6 +188,9 @@
     audio.play().catch(()=>{});
   }
 
+  /* ============================================================
+     RNG overlay
+     ============================================================ */
   function maybeShowOverlay(){
     if(Math.random()>0.05)return;
     const overlay=document.createElement('div');
@@ -180,6 +208,9 @@
     window.addEventListener('keydown',e=>{if(e.key==='Escape')close();},{once:true});
   }
 
+  /* ============================================================
+     Lights-Out Transition → Deep Page
+     ============================================================ */
   function triggerLightsOut(){
     const existing=document.querySelector('.lights-out');
     if(existing)existing.remove();
@@ -194,6 +225,9 @@
     setTimeout(()=>{window.location.href='deep.html';},2200);
   }
 
+  /* ============================================================
+     Distortion CSS Injector
+     ============================================================ */
   function injectDistortionCSS(){
     const style=document.createElement("style");
     style.textContent=`
@@ -211,153 +245,150 @@
     document.head.appendChild(style);
   }
 
-  /* ============================================================
-     Unified Helpdesk + District Manager Chat (popup variant)
-     ============================================================ */
-  function setupHelpAndDMChat(){
-    const helpBubble = q("#help-bubble");
-    const helpChat = q("#help-chat");
-    const helpMessages = helpChat?.querySelector(".help-messages");
-    const helpInput = q("#help-input");
-    const header = helpChat?.querySelector(".help-header");
+/* ============================================================
+   Unified Helpdesk + District Manager Chat
+   ============================================================ */
+function setupHelpAndDMChat(){
+  const helpBubble = q("#help-bubble");
+  const helpChat = q("#help-chat");
+  const helpMessages = helpChat?.querySelector(".help-messages");
+  const helpInput = q("#help-input");
+  const header = helpChat?.querySelector(".help-header");
 
-    if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
+  if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
 
-    let districtOnline = false;
-    let idleTimer = null;
+  let districtOnline = false;
+  let idleTimer = null;
 
-    function addMessage(type, text) {
-      const msg = document.createElement("div");
-      msg.className = `help-message ${type}`;
-      msg.innerHTML = text;
-      helpMessages.appendChild(msg);
-      helpMessages.scrollTop = helpMessages.scrollHeight;
+  function addMessage(type, text) {
+    const msg = document.createElement("div");
+    msg.className = `help-message ${type}`;
+    msg.innerHTML = text;
+    helpMessages.appendChild(msg);
+    helpMessages.scrollTop = helpMessages.scrollHeight;
+  }
+
+  function showTyping(callback, delay = 1000) {
+    const dots = document.createElement("div");
+    dots.className = "dm-typing";
+    dots.innerHTML = "<span></span><span></span><span></span>";
+    helpMessages.appendChild(dots);
+    helpMessages.scrollTop = helpMessages.scrollHeight;
+    setTimeout(() => { dots.remove(); callback(); }, delay);
+  }
+
+  function getClientInfo() {
+    return `I can see you’re on ${navigator.platform} using ${getBrowserName(navigator.userAgent)}…`;
+  }
+
+  function getBrowserName(ua){
+    if(ua.includes("Chrome"))return"Chrome";
+    if(ua.includes("Firefox"))return"Firefox";
+    if(ua.includes("Safari")&&!ua.includes("Chrome"))return"Safari";
+    if(ua.includes("Edge"))return"Edge";
+    return"an unknown browser";
+  }
+
+  helpBubble.addEventListener("click", () => {
+    helpChat.classList.toggle("visible");
+    if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
+      addMessage("bot", "Our help desk is currently offline. Please leave a message.");
     }
+  });
 
-    function showTyping(callback, delay = 1000) {
-      const dots = document.createElement("div");
-      dots.className = "dm-typing";
-      dots.innerHTML = "<span></span><span></span><span></span>";
-      helpMessages.appendChild(dots);
-      helpMessages.scrollTop = helpMessages.scrollHeight;
-      setTimeout(() => {
-        dots.remove();
-        callback();
-      }, delay);
-    }
-
-    function getClientInfo() {
-      return `I can see you’re on ${navigator.platform} using ${getBrowserName(navigator.userAgent)}…`;
-    }
-
-    function getBrowserName(ua){
-      if(ua.includes("Chrome"))return"Chrome";
-      if(ua.includes("Firefox"))return"Firefox";
-      if(ua.includes("Safari")&&!ua.includes("Chrome"))return"Safari";
-      if(ua.includes("Edge"))return"Edge";
-      return"an unknown browser";
-    }
-
-    helpBubble.addEventListener("click", () => {
-      helpChat.classList.toggle("visible");
-      if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
-        addMessage("bot", "Our help desk is currently offline. Please leave a message.");
-      }
-    });
-
-    helpInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && helpInput.value.trim()) {
-        const text = helpInput.value.trim();
-        helpInput.value = "";
-        addMessage("user", text);
-        clearTimeout(idleTimer);
-
-        if (!districtOnline) {
-          showTyping(() => {
-            addMessage("bot", "We’re currently outside help desk business hours.");
-            setTimeout(() => {
-              const systemMsg = document.createElement("div");
-              systemMsg.className = "help-message system";
-              systemMsg.textContent = "DISTRICT MANAGER has joined the chat...";
-              helpMessages.appendChild(systemMsg);
-              helpMessages.scrollTop = helpMessages.scrollHeight;
-              setTimeout(startDistrictManager, 1800);
-            }, 1500);
-          }, 1200);
-        } else {
-          handleDMResponse(text);
-        }
-      }
-    });
-
-    function startDistrictManager() {
-      districtOnline = true;
-      header.textContent = "District Manager 🟢";
-      header.classList.add("dm-online");
-      showTyping(() => {
-        addMessage("bot", "What are you looking for?");
-        resetIdleTimer();
-      }, 1200);
-    }
-
-    function handleDMResponse(inputText) {
-      resetIdleTimer();
-      const lower = inputText.toLowerCase();
-      const productWords = /(shirt|jacket|pants|product|item|stock|inventory|jeans|hoodie)/;
-
-      const nonsense = [
-        "that’s not in stock.",
-        "check the shelves again.",
-        "we moved everything recently.",
-        "inventory fluctuates in the dark.",
-        "loss prevention is aware.",
-        "…did you clock in?",
-      ];
-
-      if (productWords.test(lower)) {
-        showTyping(() => {
-          addMessage("bot", "Would you like to check in the back?");
-          const link = document.createElement("a");
-          link.href = "#";
-          link.textContent = "Check in the back →";
-          link.addEventListener("click", (e) => {
-            e.preventDefault();
-            const w = window.open(
-              "backroom.html",
-              "backroomPopup",
-              "width=600,height=400,top=100,left=100,menubar=no,toolbar=no,location=no,status=no"
-            );
-            if (!w) window.location.href = "backroom.html"; // fallback
-          });
-          const wrapper = document.createElement("div");
-          wrapper.className = "help-message bot";
-          wrapper.appendChild(link);
-          helpMessages.appendChild(wrapper);
-          helpMessages.scrollTop = helpMessages.scrollHeight;
-        }, 1500);
-      } else {
-        showTyping(() => {
-          addMessage("bot", nonsense[Math.floor(Math.random() * nonsense.length)]);
-        }, 1000);
-      }
-    }
-
-    function resetIdleTimer() {
+  helpInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && helpInput.value.trim()) {
+      const text = helpInput.value.trim();
+      helpInput.value = "";
+      addMessage("user", text);
       clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => {
-        if (districtOnline) {
-          showTyping(() => {
-            const msg = document.createElement("div");
-            msg.className = "help-message bot distort-reveal";
-            msg.textContent = getClientInfo();
-            helpMessages.appendChild(msg);
+
+      if (!districtOnline) {
+        showTyping(() => {
+          addMessage("bot", "We’re currently outside help desk business hours.");
+          setTimeout(() => {
+            const systemMsg = document.createElement("div");
+            systemMsg.className = "help-message system";
+            systemMsg.textContent = "DISTRICT MANAGER has joined the chat...";
+            helpMessages.appendChild(systemMsg);
             helpMessages.scrollTop = helpMessages.scrollHeight;
-            showTyping(() => {
-              addMessage("bot", "So why don't you ask for help! I'm always happy to help for you! Just ask! Help!");
-            }, 1500);
-          }, 1000);
-        }
-      }, 7000);
+            setTimeout(startDistrictManager, 1800);
+          }, 1500);
+        }, 1200);
+      } else {
+        handleDMResponse(text);
+      }
+    }
+  });
+
+  function startDistrictManager() {
+    districtOnline = true;
+    header.textContent = "District Manager 🟢";
+    header.classList.add("dm-online");
+    showTyping(() => {
+      addMessage("bot", "What are you looking for?");
+      resetIdleTimer();
+    }, 1200);
+  }
+
+  function handleDMResponse(inputText) {
+    resetIdleTimer();
+    const lower = inputText.toLowerCase();
+    const productWords = /(shirt|jacket|pants|product|item|stock|inventory|jeans|hoodie)/;
+
+    const nonsense = [
+      "that’s not in stock.",
+      "check the shelves again.",
+      "we moved everything recently.",
+      "inventory fluctuates in the dark.",
+      "loss prevention is aware.",
+      "…did you clock in?",
+    ];
+
+    if (productWords.test(lower)) {
+      showTyping(() => {
+        addMessage("bot", "Would you like to check in the back?");
+        const link = document.createElement("a");
+        link.href = "back.html";
+        link.textContent = "Check in the back →";
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          window.open(
+            "back.html",
+            "backroom",
+            "width=600,height=400,menubar=no,toolbar=no,location=no,status=no,resizable=no"
+          );
+        });
+        const linkMsg = document.createElement("div");
+        linkMsg.className = "help-message bot";
+        linkMsg.appendChild(link);
+        helpMessages.appendChild(linkMsg);
+        helpMessages.scrollTop = helpMessages.scrollHeight;
+      }, 1500);
+    } else {
+      showTyping(() => {
+        addMessage("bot", nonsense[Math.floor(Math.random() * nonsense.length)]);
+      }, 1000);
     }
   }
+
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      if (districtOnline) {
+        showTyping(() => {
+          const msg = document.createElement("div");
+          msg.className = "help-message bot distort-reveal";
+          msg.textContent = getClientInfo();
+          helpMessages.appendChild(msg);
+          helpMessages.scrollTop = helpMessages.scrollHeight;
+
+          showTyping(() => {
+            addMessage("bot", "So why don't you ask for help! I'm always happy to help for you! Just ask! Help!");
+          }, 1500);
+        }, 1000);
+      }
+    }, 7000);
+  }
+}
 })();
