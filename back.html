@@ -41,44 +41,43 @@
 </head>
 <body>
   <img id="image" src="assets/backroom.jpg" alt="storage room">
-  <audio id="ambient" src="assets/backroom.mp3" preload="auto" muted></audio>
+  <audio id="ambient" src="assets/backroom.mp3" preload="auto"></audio>
 
   <script>
     const img = document.getElementById('image');
     const audio = document.getElementById('ambient');
 
-    // fade in image + flicker
+    // fade in and flicker
     setTimeout(() => {
       img.style.opacity = 1;
       img.classList.add('flicker');
-    }, 1000);
+    }, 800);
 
-    // fade-in ambient sound, works without interaction
-    function fadeInAudio() {
-      audio.muted = false;
-      let volume = 0;
+    // ensure audio tries to play (with fallback for autoplay block)
+    function tryPlayAudio() {
+      audio.volume = 0;
       const target = 0.5;
-      audio.volume = volume;
-      audio.play().catch(() => {});
       const fade = setInterval(() => {
-        volume += 0.05;
-        audio.volume = Math.min(volume, target);
-        if (volume >= target) clearInterval(fade);
+        if (audio.volume < target) {
+          audio.volume = Math.min(audio.volume + 0.05, target);
+        } else {
+          clearInterval(fade);
+        }
       }, 200);
+
+      audio.play().catch(() => {
+        // if autoplay fails, retry on first click/tap
+        window.addEventListener('click', tryPlayAudio, { once: true });
+      });
     }
 
-    // start playback muted, then fade in
-    audio.play().then(() => {
-      setTimeout(fadeInAudio, 500);
-    }).catch(() => {
-      // fallback for strict autoplay blocking
-      window.addEventListener('click', fadeInAudio, { once: true });
-    });
+    setTimeout(tryPlayAudio, 500);
 
-    // close popup after ~10 seconds
+    // close after ~10s
     setTimeout(() => {
       window.close();
     }, 10000);
   </script>
 </body>
 </html>
+
