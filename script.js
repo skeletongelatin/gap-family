@@ -1,5 +1,5 @@
 /* ============================================================
-script.js (The Gap Family, Oct 2025 — Stable Working Version)
+script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
 ============================================================ */
 
 (function() {
@@ -43,7 +43,11 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
     if (localStorage.getItem(deepLoopKey) === '1')
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
     injectDistortionCSS();
-    setupHelpAndDMChat();
+
+    // only init chat on products page
+    if (page === 'products') setupHelpAndDMChat();
+
+    setupMobileGapSequence();
   });
 
   /* ============================================================
@@ -140,17 +144,11 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
       if(required.includes(k)){
         progress.push(k);
         if(progress.join('')===required.join('')){
-          const click = new Audio('assets/keyclick.mp3');
-          click.volume = 0.4;
-          click.play().catch(()=>{});
+          playWhisperOnce(true);
           triggerLightsOut();
           progress = [];
         } else if(progress.join('') !== required.slice(0,progress.length).join('')){
           progress = [];
-        } else {
-          const click = new Audio('assets/keyclick.mp3');
-          click.volume = 0.4;
-          click.play().catch(()=>{});
         }
       }
     });
@@ -181,7 +179,7 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   }
 
   /* ============================================================
-  Whisper chime
+  Whisper sound
   ============================================================ */
   function playWhisperOnce(force=false){
     if(!force && Math.random()>0.06)return;
@@ -203,7 +201,6 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
     setTimeout(()=>overlay.classList.add('visible'),50);
     const chime=new Audio('assets/whisper-clip.mp3');
     chime.volume=0.6;chime.play().catch(()=>{});
-    console.log('⚫ Lights out triggered — redirecting soon');
     setTimeout(()=>{window.location.href='deep.html';},2200);
   }
 
@@ -229,7 +226,37 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   }
 
   /* ============================================================
-  Unified Helpdesk + DM Chat
+   Mobile GAP Key Sequence (click sound fixed)
+   ============================================================ */
+  function setupMobileGapSequence() {
+    const mobileKeys = document.querySelectorAll(".gap-key");
+    if (!mobileKeys.length) return;
+
+    let seq = [];
+    mobileKeys.forEach(key => {
+      key.addEventListener("click", () => {
+        // play a *key click* sound, not whisper
+        const clickSound = new Audio("assets/keyclick.mp3"); // use your keypress sound file
+        clickSound.volume = 0.5;
+        clickSound.play().catch(() => {});
+
+        const val = key.dataset.key;
+        seq.push(val);
+        key.style.transform = "translateY(4px)";
+        setTimeout(() => key.style.transform = "", 150);
+
+        if (seq.join("") === "gap") {
+          triggerLightsOut();
+          seq = [];
+        } else if (!"gap".startsWith(seq.join(""))) {
+          seq = [];
+        }
+      });
+    });
+  }
+
+  /* ============================================================
+  Helpdesk Chat — products only
   ============================================================ */
   function setupHelpAndDMChat(){
     const helpBubble = document.querySelector("#help-bubble");
@@ -354,35 +381,4 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
       }, 7000);
     }
   }
-
-  /* ============================================================
-   Mobile GAP Key Sequence (touch version)
-   ============================================================ */
-  document.addEventListener("DOMContentLoaded", () => {
-    const mobileKeys = document.querySelectorAll(".gap-key");
-    if (!mobileKeys.length) return;
-
-    let seq = [];
-    mobileKeys.forEach(key => {
-      key.addEventListener("click", () => {
-        const sound = new Audio("assets/keyclick.mp3"); // fixed from whisper
-        sound.volume = 0.4;
-        sound.play().catch(() => {});
-        const val = key.dataset.key;
-        seq.push(val);
-        key.style.transform = "translateY(4px)";
-        setTimeout(() => key.style.transform = "", 150);
-
-        if (seq.join("") === "gap") {
-          if (typeof triggerLightsOut === "function") {
-            triggerLightsOut();
-          }
-          seq = [];
-        } else if (!"gap".startsWith(seq.join(""))) {
-          seq = [];
-        }
-      });
-    });
-  });
-
 })();
