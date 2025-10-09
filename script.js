@@ -256,16 +256,17 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
   }
 
   /* ============================================================
-  Helpdesk Chat — products only
+  Helpdesk Chat — products only (fixed bubble click issue)
   ============================================================ */
-  function setupHelpAndDMChat(){
+  function setupHelpAndDMChat() {
     const helpBubble = document.querySelector("#help-bubble");
     const helpChat = document.querySelector("#help-chat");
     const helpMessages = helpChat?.querySelector(".help-messages");
     const helpInput = document.querySelector("#help-input");
     const header = helpChat?.querySelector(".help-header");
 
-    if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
+    // Only run if on products page and elements exist
+    if (document.body.getAttribute("data-page") !== "products" || !helpBubble || !helpChat || !helpMessages || !helpInput) return;
 
     let districtOnline = false;
     let idleTimer = null;
@@ -290,10 +291,20 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
       }, delay);
     }
 
-    helpBubble.addEventListener("click", () => {
+    // ✅ Bubble toggles chat only (no backroom popup interference)
+    helpBubble.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       helpChat.classList.toggle("visible");
       if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
         addMessage("bot", "Our help desk is currently offline. Please leave a message.");
+      }
+    });
+
+    // ✅ Clicking outside closes chat
+    document.addEventListener("click", (e) => {
+      if (!helpChat.contains(e.target) && !helpBubble.contains(e.target)) {
+        helpChat.classList.remove("visible");
       }
     });
 
@@ -353,12 +364,14 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
           helpMessages.appendChild(msg);
           helpMessages.scrollTop = helpMessages.scrollHeight;
 
+          // ✅ Stop event propagation so this link never triggers bubble logic
           const link = msg.querySelector(".check-back-link");
           link.addEventListener("click", (e) => {
             e.preventDefault();
+            e.stopPropagation();
             const audio = new Audio("assets/backroom.mp3");
             audio.volume = 0.5;
-            audio.play().catch(()=>{});
+            audio.play().catch(() => {});
             const w = 700, h = 500;
             const left = window.screenX + (window.outerWidth - w) / 2;
             const top = window.screenY + (window.outerHeight - h) / 2;
@@ -381,4 +394,5 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
       }, 7000);
     }
   }
+
 })();
