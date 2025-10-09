@@ -129,26 +129,59 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
     });
   }
 
-  /* ============================================================
-  GAP sequence
+/* ============================================================
+  GAP sequence (desktop + mobile)
   ============================================================ */
-  function setupGapSequence(){
-    const required = ['g','a','p'];
-    let progress = [];
-    window.addEventListener('keydown', e=>{
-      const k = e.key.toLowerCase();
-      if(required.includes(k)){
-        progress.push(k);
-        if(progress.join('')===required.join('')){
-          playWhisperOnce(true);
-          triggerLightsOut();
-          progress = [];
-        } else if(progress.join('') !== required.slice(0,progress.length).join('')){
-          progress = [];
-        }
-      }
+function setupGapSequence() {
+  const required = ['g','a','p'];
+  let progress = [];
+
+  // --- desktop typing ---
+  window.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    if (!required.includes(k)) return;
+
+    playKeyClick(); // play click for keyboard too
+    progress.push(k);
+    checkSequence(progress, required);
+  });
+
+  // --- mobile tapping ---
+  const keys = qAll('.gap-key');
+  if (keys.length) {
+    let tapProgress = [];
+    keys.forEach(kEl => {
+      kEl.addEventListener('click', ev => {
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        playKeyClick();
+        kEl.classList.add('pressed');
+        setTimeout(()=>kEl.classList.remove('pressed'),150);
+
+        tapProgress.push(kEl.dataset.key);
+        checkSequence(tapProgress, required);
+      });
     });
   }
+
+  function playKeyClick() {
+    try {
+      const click = new Audio('assets/keyclick.mp3');
+      click.volume = 0.4;
+      click.play().catch(()=>{});
+    } catch(e){}
+  }
+
+  function checkSequence(arr, ref) {
+    if (arr.join('') === ref.join('')) {
+      triggerLightsOut();
+      arr.length = 0;
+    } else if (arr.join('') !== ref.slice(0, arr.length).join('')) {
+      arr.length = 0;
+    }
+  }
+}
 
   /* ============================================================
   District Manager Photo
