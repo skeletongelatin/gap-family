@@ -1,128 +1,67 @@
 /* ============================================================
-   chat.js — District Manager Help Chat
-   Only loaded on the products page
+   chat.js — Help Desk System for thegapfamily (Products page)
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
-  const helpBubble = document.querySelector("#help-bubble");
-  const helpChat = document.querySelector("#help-chat");
-  const helpMessages = helpChat?.querySelector(".help-messages");
-  const helpInput = document.querySelector("#help-input");
-  const header = helpChat?.querySelector(".help-header");
+document.addEventListener('DOMContentLoaded', () => {
+  const bubble = document.getElementById('help-bubble');
+  const chat = document.getElementById('help-chat');
+  const messages = document.querySelector('.help-messages');
+  const input = document.getElementById('help-input');
 
-  if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
+  if (!bubble || !chat) return;
 
-  let districtOnline = false;
-  let idleTimer = null;
+  // show bubble fixed bottom-right
+  bubble.style.position = 'fixed';
+  bubble.style.bottom = '20px';
+  bubble.style.right = '20px';
+  bubble.style.zIndex = '9999';
+  bubble.style.cursor = 'pointer';
 
-  function addMessage(type, text) {
-    const msg = document.createElement("div");
-    msg.className = `help-message ${type}`;
-    msg.innerHTML = text;
-    helpMessages.appendChild(msg);
-    helpMessages.scrollTop = helpMessages.scrollHeight;
-  }
+  bubble.addEventListener('click', () => {
+    chat.classList.toggle('visible');
+  });
 
-  function showTyping(callback, delay = 1000) {
-    const dots = document.createElement("div");
-    dots.className = "dm-typing";
-    dots.innerHTML = "<span></span><span></span><span></span>";
-    helpMessages.appendChild(dots);
-    helpMessages.scrollTop = helpMessages.scrollHeight;
-    setTimeout(() => {
-      dots.remove();
-      callback();
-    }, delay);
-  }
-
-  helpBubble.addEventListener("click", () => {
-    helpChat.classList.toggle("visible");
-    if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
-      addMessage("bot", "Our help desk is currently offline. Please leave a message.");
+  // handle sending messages
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && input.value.trim() !== '') {
+      const text = input.value.trim();
+      appendMessage('user', text);
+      input.value = '';
+      handleResponse(text);
     }
   });
 
-  helpInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && helpInput.value.trim()) {
-      const text = helpInput.value.trim();
-      helpInput.value = "";
-      addMessage("user", text);
-      clearTimeout(idleTimer);
-
-      if (!districtOnline) {
-        showTyping(() => {
-          addMessage("bot", "We’re currently outside help desk business hours.");
-          setTimeout(() => {
-            const systemMsg = document.createElement("div");
-            systemMsg.className = "help-message system";
-            systemMsg.textContent = "DISTRICT MANAGER has joined the chat...";
-            helpMessages.appendChild(systemMsg);
-            helpMessages.scrollTop = helpMessages.scrollHeight;
-            setTimeout(startDistrictManager, 1800);
-          }, 1500);
-        }, 1200);
-      } else {
-        handleDMResponse(text);
-      }
-    }
-  });
-
-  function startDistrictManager() {
-    districtOnline = true;
-    header.textContent = "District Manager 🟢";
-    header.classList.add("dm-online");
-    showTyping(() => {
-      addMessage("bot", "What are you looking for?");
-      resetIdleTimer();
-    }, 1200);
+  function appendMessage(sender, text) {
+    const msg = document.createElement('div');
+    msg.className = `msg ${sender}`;
+    msg.textContent = text;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
   }
 
-  function handleDMResponse(inputText) {
-    resetIdleTimer();
-    const lower = inputText.toLowerCase();
-    const productWords = /(shirt|jacket|pants|product|item|stock|inventory|jeans|hoodie)/;
-    const nonsense = [
-      "that’s not in stock.",
-      "check the shelves again.",
-      "we moved everything recently.",
-      "inventory fluctuates in the dark.",
-      "loss prevention is aware.",
-      "…did you clock in?",
-    ];
+  function handleResponse(text) {
+    const lower = text.toLowerCase();
 
-    if (productWords.test(lower)) {
-      showTyping(() => {
-        const msg = document.createElement("div");
-        msg.className = "help-message bot";
-        msg.innerHTML = `<a href="#" class="check-back-link">Check in the back →</a>`;
-        helpMessages.appendChild(msg);
-        helpMessages.scrollTop = helpMessages.scrollHeight;
-
-        const link = msg.querySelector(".check-back-link");
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          const audio = new Audio("assets/backroom.mp3");
-          audio.volume = 0.5;
-          audio.play().catch(() => {});
-          const w = 700, h = 500;
-          const left = window.screenX + (window.outerWidth - w) / 2;
-          const top = window.screenY + (window.outerHeight - h) / 2;
-          const features = `width=${w},height=${h},left=${left},top=${top},popup=yes,resizable=no,scrollbars=no`;
-          const popup = window.open("back.html", "backpopup", features);
-          if (!popup) window.open("back.html", "_blank");
-        });
-      }, 1500);
+    if (lower.includes('pants') || lower.includes('stock') || lower.includes('back')) {
+      appendMessage('bot', 'Checking in the back...');
+      setTimeout(() => {
+        appendMessage('bot', 'Please hold...');
+        openBackroom();
+      }, 1200);
     } else {
-      showTyping(() => {
-        addMessage("bot", nonsense[Math.floor(Math.random() * nonsense.length)]);
-      }, 1000);
+      appendMessage('bot', "I'm not sure about that. Try asking about our stock.");
     }
   }
 
-  function resetIdleTimer() {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => {
-      addMessage("bot", "Still there?");
-    }, 7000);
+  function openBackroom() {
+    const popup = window.open(
+      'back.html',
+      'backroom',
+      'width=500,height=350,menubar=no,toolbar=no,location=no,status=no,resizable=no'
+    );
+
+    if (!popup) {
+      appendMessage('bot', 'Please allow pop-ups to continue.');
+    }
   }
 });
