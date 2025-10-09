@@ -1,5 +1,5 @@
 /* ============================================================
-script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
+script.js (The Gap Family, Oct 2025 — Stable Working Version)
 ============================================================ */
 
 (function() {
@@ -43,11 +43,7 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
     if (localStorage.getItem(deepLoopKey) === '1')
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
     injectDistortionCSS();
-
-    // only init chat on products page
-    if (page === 'products') setupHelpAndDMChat();
-
-    setupMobileGapSequence();
+    setupHelpAndDMChat();
   });
 
   /* ============================================================
@@ -134,7 +130,7 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
   }
 
   /* ============================================================
-  GAP sequence (desktop)
+  GAP sequence
   ============================================================ */
   function setupGapSequence(){
     const required = ['g','a','p'];
@@ -179,7 +175,7 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
   }
 
   /* ============================================================
-  Whisper sound
+  Whisper chime
   ============================================================ */
   function playWhisperOnce(force=false){
     if(!force && Math.random()>0.06)return;
@@ -201,6 +197,7 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
     setTimeout(()=>overlay.classList.add('visible'),50);
     const chime=new Audio('assets/whisper-clip.mp3');
     chime.volume=0.6;chime.play().catch(()=>{});
+    console.log('⚫ Lights out triggered — redirecting soon');
     setTimeout(()=>{window.location.href='deep.html';},2200);
   }
 
@@ -226,47 +223,16 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
   }
 
   /* ============================================================
-   Mobile GAP Key Sequence (click sound fixed)
-   ============================================================ */
-  function setupMobileGapSequence() {
-    const mobileKeys = document.querySelectorAll(".gap-key");
-    if (!mobileKeys.length) return;
-
-    let seq = [];
-    mobileKeys.forEach(key => {
-      key.addEventListener("click", () => {
-        // play a *key click* sound, not whisper
-        const clickSound = new Audio("assets/keyclick.mp3"); // use your keypress sound file
-        clickSound.volume = 0.5;
-        clickSound.play().catch(() => {});
-
-        const val = key.dataset.key;
-        seq.push(val);
-        key.style.transform = "translateY(4px)";
-        setTimeout(() => key.style.transform = "", 150);
-
-        if (seq.join("") === "gap") {
-          triggerLightsOut();
-          seq = [];
-        } else if (!"gap".startsWith(seq.join(""))) {
-          seq = [];
-        }
-      });
-    });
-  }
-
-  /* ============================================================
-  Helpdesk Chat — products only (fixed bubble click issue)
+  Unified Helpdesk + DM Chat
   ============================================================ */
-  function setupHelpAndDMChat() {
+  function setupHelpAndDMChat(){
     const helpBubble = document.querySelector("#help-bubble");
     const helpChat = document.querySelector("#help-chat");
     const helpMessages = helpChat?.querySelector(".help-messages");
     const helpInput = document.querySelector("#help-input");
     const header = helpChat?.querySelector(".help-header");
 
-    // Only run if on products page and elements exist
-    if (document.body.getAttribute("data-page") !== "products" || !helpBubble || !helpChat || !helpMessages || !helpInput) return;
+    if (!helpBubble || !helpChat || !helpMessages || !helpInput) return;
 
     let districtOnline = false;
     let idleTimer = null;
@@ -291,20 +257,10 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
       }, delay);
     }
 
-    // ✅ Bubble toggles chat only (no backroom popup interference)
-    helpBubble.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    helpBubble.addEventListener("click", () => {
       helpChat.classList.toggle("visible");
       if (helpChat.classList.contains("visible") && helpMessages.children.length === 0) {
         addMessage("bot", "Our help desk is currently offline. Please leave a message.");
-      }
-    });
-
-    // ✅ Clicking outside closes chat
-    document.addEventListener("click", (e) => {
-      if (!helpChat.contains(e.target) && !helpBubble.contains(e.target)) {
-        helpChat.classList.remove("visible");
       }
     });
 
@@ -364,14 +320,12 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
           helpMessages.appendChild(msg);
           helpMessages.scrollTop = helpMessages.scrollHeight;
 
-          // ✅ Stop event propagation so this link never triggers bubble logic
           const link = msg.querySelector(".check-back-link");
           link.addEventListener("click", (e) => {
             e.preventDefault();
-            e.stopPropagation();
             const audio = new Audio("assets/backroom.mp3");
             audio.volume = 0.5;
-            audio.play().catch(() => {});
+            audio.play().catch(()=>{});
             const w = 700, h = 500;
             const left = window.screenX + (window.outerWidth - w) / 2;
             const top = window.screenY + (window.outerHeight - h) / 2;
@@ -394,5 +348,4 @@ script.js (The Gap Family, Oct 2025 — Fixed Mobile Key Sound)
       }, 7000);
     }
   }
-
 })();

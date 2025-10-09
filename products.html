@@ -47,35 +47,22 @@
     </div>
   </footer>
 
-  <!-- === Floating Help Bubble (Products Only) === -->
-  <div id="check-bubble" class="check-bubble">
-    <button id="check-toggle" aria-label="Chat">💬</button>
+  <!-- === Help Desk Bubble + Chat === -->
+  <div id="help-bubble" class="help-bubble">💬</div>
+
+  <div id="help-chat" class="help-chat">
+    <div class="help-header">Customer Support</div>
+    <div class="help-messages"></div>
+    <input type="text" id="help-input" placeholder="Type your message..." autocomplete="off">
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const toggle = document.getElementById('check-toggle');
-      if (!toggle) return;
+  <!-- === District Manager Notice + Chat === -->
+  <div id="dm-notice" class="dm-notice">District Manager Online</div>
 
-      toggle.addEventListener('click', () => {
-        const width = 420;
-        const height = 280;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-
-        const popup = window.open(
-          'back.html',
-          'backroom',
-          `width=${width},height=${height},left=${left},top=${top},popup=yes`
-        );
-
-        // optional chime
-        const sound = new Audio('assets/check-in.mp3');
-        sound.volume = 0.5;
-        sound.play().catch(() => {});
-      });
-    });
-  </script>
+  <div id="dm-chat" class="dm-chat">
+    <div class="dm-header">District Manager</div>
+    <div class="dm-messages"></div>
+    <input type="text" id="dm-input" placeholder="Type your message..." autocomplete="off">
+  </div>
 </body>
 </html>
-
