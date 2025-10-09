@@ -633,6 +633,134 @@ body.rumble {
   padding: 0.3rem 0;
 }
 
+/* ============================================================
+   Deep Page Final Sequence — Shrink, Rumble, Glitch, Promo Storm
+   ============================================================ */
+
+/* Shrink stages */
+body.shrink-1 .main,
+body.shrink-1 .site-header,
+body.shrink-1 .site-footer {
+  transform: scale(0.97);
+  filter: brightness(0.85);
+  transition: all 0.4s ease;
+}
+body.shrink-2 .main,
+body.shrink-2 .site-header,
+body.shrink-2 .site-footer {
+  transform: scale(0.94);
+  filter: brightness(0.75);
+  transition: all 0.4s ease;
+}
+body.shrink-3 .main,
+body.shrink-3 .site-header,
+body.shrink-3 .site-footer {
+  transform: scale(0.9);
+  filter: brightness(0.6);
+  transition: all 0.4s ease;
+}
+
+/* Rumble */
+@keyframes subtleRumble {
+  0%,100% { transform: translate(0,0); }
+  20% { transform: translate(-1px,1px); }
+  40% { transform: translate(1px,-1px); }
+  60% { transform: translate(-1px,-1px); }
+  80% { transform: translate(1px,1px); }
+}
+body.rumble {
+  animation: subtleRumble 0.3s ease-in-out 3;
+}
+
+/* Final button */
+.btn.final-stage {
+  position: fixed !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  font-size: 2rem;
+  padding: 2rem 4rem;
+  z-index: 9998;
+  background: var(--gap-blue);
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.5);
+  animation: rumbleGrow 2s ease-in-out infinite;
+}
+@keyframes rumbleGrow {
+  0%,100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* Glitch + CRT flash */
+.glitch-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: repeating-linear-gradient(0deg,#fff 0px,#fff 2px,#ccc 3px,#fff 5px);
+  animation: glitchFlash 1.5s ease-in-out;
+  opacity: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+@keyframes glitchFlash {
+  0% { opacity: 0; }
+  10%,15%,20%,40%,60%,80% { opacity: 1; transform: translateY(-2px); }
+  12%,18%,22%,50%,70%,90% { opacity: 1; transform: translateY(2px); }
+  100% { opacity: 0; }
+}
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.15) 0px,
+    rgba(0,0,0,0.15) 1px,
+    transparent 2px
+  );
+  mix-blend-mode: multiply;
+  z-index: 9998;
+  opacity: 0;
+  animation: scanlinePulse 1.5s ease-in-out;
+}
+@keyframes scanlinePulse {
+  0%,100% { opacity: 0; }
+  10%,70% { opacity: 1; }
+}
+
+/* Promo storm */
+.storm-btn {
+  position: fixed;
+  font-family: inherit;
+  font-weight: bold;
+  text-transform: uppercase;
+  background: var(--gap-blue);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 500;
+  transition: opacity 0.3s ease, transform 0.4s ease;
+  filter: brightness(1.2);
+}
+.storm-btn.show {
+  opacity: 1;
+  animation: promoPulse 0.8s ease-in-out;
+}
+@keyframes promoPulse {
+  0% { transform: scale(0.6) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.storm-btn.fade {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
 
 /* ============================================================
    FINAL visibility fix for GAP section
