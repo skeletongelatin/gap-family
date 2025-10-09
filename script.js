@@ -348,4 +348,36 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
       }, 7000);
     }
   }
+
+  /* ============================================================
+   Mobile GAP Key Sequence (touch version)
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  const mobileKeys = document.querySelectorAll(".gap-key");
+  if (!mobileKeys.length) return;
+
+  let seq = [];
+  mobileKeys.forEach(key => {
+    key.addEventListener("click", () => {
+      const sound = new Audio("assets/whisper-clip.mp3");
+      sound.volume = 0.4;
+      sound.play().catch(() => {});
+      const val = key.dataset.key;
+      seq.push(val);
+      key.style.transform = "translateY(4px)";
+      setTimeout(() => key.style.transform = "", 150);
+
+      if (seq.join("") === "gap") {
+        // triggers same lights-out transition as desktop
+        if (typeof triggerLightsOut === "function") {
+          triggerLightsOut();
+        }
+        seq = [];
+      } else if (!"gap".startsWith(seq.join(""))) {
+        seq = [];
+      }
+    });
+  });
+});
+
 })();
