@@ -30,12 +30,8 @@
     }
 
     @keyframes flicker {
-      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-        opacity: 1;
-      }
-      20%, 24%, 55% {
-        opacity: 0.3;
-      }
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+      20%, 24%, 55% { opacity: 0.3; }
     }
   </style>
 </head>
@@ -47,36 +43,33 @@
     const img = document.getElementById('image');
     const audio = document.getElementById('ambient');
 
-    // fade in and flicker
+    // fade in + flicker
     setTimeout(() => {
       img.style.opacity = 1;
       img.classList.add('flicker');
-    }, 800);
+    }, 1000);
 
-    // ensure audio tries to play (with fallback for autoplay block)
-    function tryPlayAudio() {
+    // try to autoplay, else wait for interaction
+    function fadeInAudio() {
       audio.volume = 0;
       const target = 0.5;
-      const fade = setInterval(() => {
-        if (audio.volume < target) {
-          audio.volume = Math.min(audio.volume + 0.05, target);
-        } else {
-          clearInterval(fade);
-        }
-      }, 200);
-
-      audio.play().catch(() => {
-        // if autoplay fails, retry on first click/tap
-        window.addEventListener('click', tryPlayAudio, { once: true });
+      audio.play().then(() => {
+        const fade = setInterval(() => {
+          if (audio.volume < target) {
+            audio.volume = Math.min(audio.volume + 0.05, target);
+          } else {
+            clearInterval(fade);
+          }
+        }, 200);
+      }).catch(() => {
+        window.addEventListener('click', fadeInAudio, { once: true });
       });
     }
 
-    setTimeout(tryPlayAudio, 500);
+    setTimeout(fadeInAudio, 500);
 
-    // close after ~10s
-    setTimeout(() => {
-      window.close();
-    }, 10000);
+    // close popup after 10 seconds
+    setTimeout(() => window.close(), 10000);
   </script>
 </body>
 </html>
