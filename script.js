@@ -136,20 +136,26 @@ function setupGapSequence() {
   const required = ['g', 'a', 'p'];
   let progress = [];
 
+  // preload click sound
+  const clickSound = new Audio('assets/keyclick.mp3');
+  clickSound.volume = 0.3;
+
   // --- DESKTOP keyboard sequence ---
   window.addEventListener('keydown', e => {
     const k = e.key.toLowerCase();
     if (required.includes(k)) {
+      playKeyClick();
       progress.push(k);
       checkGapProgress();
     }
   });
 
-  // --- MOBILE key images (NEW) ---
+  // --- MOBILE key images ---
   const keyEls = document.querySelectorAll('.gap-key');
   keyEls.forEach(el => {
     el.addEventListener('click', () => {
       const k = el.dataset.key;
+      playKeyClick();
       el.classList.add('pressed');
       setTimeout(() => el.classList.remove('pressed'), 150);
       progress.push(k);
@@ -157,7 +163,14 @@ function setupGapSequence() {
     });
   });
 
-  // --- Common logic ---
+  // --- Shared helpers ---
+  function playKeyClick() {
+    // Restart sound each time for quick taps
+    const s = clickSound.cloneNode();
+    s.volume = 0.3;
+    s.play().catch(() => {});
+  }
+
   function checkGapProgress() {
     if (progress.join('') === required.join('')) {
       playWhisperOnce(true);
@@ -168,6 +181,7 @@ function setupGapSequence() {
     }
   }
 }
+
 
   /* ============================================================
   District Manager Photo
