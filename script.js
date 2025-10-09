@@ -46,6 +46,9 @@
 
     // === Deep Page special ===
     if (body.dataset.page === 'deep') setupDeepPage();
+
+    // Inject distortion CSS once
+    injectDistortionCSS();
   });
 
   /* ============================================================
@@ -248,259 +251,158 @@
     console.log('⚫ Lights out triggered — redirecting soon');
     setTimeout(()=>{window.location.href='deep.html';},2200);
   }
-/* ============================================================
-   DEEP PAGE BUTTON LOGIC + RUMBLE + BUTTON STORM
-   ============================================================ */
-function setupDeepPage() {
-  const btn = document.querySelector('.btn');
-  if (!btn) return;
 
-  let clickStage = 0;
-  let stormInterval;
+  /* ============================================================
+     DISTRICT MANAGER CHAT LOGIC + REVEAL DISTORTION
+     ============================================================ */
 
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    clickStage++;
+  let dmNotice = document.querySelector(".dm-notice");
+  let dmChat = document.querySelector(".dm-chat");
+  let dmMessages = dmChat?.querySelector(".dm-messages");
+  let dmInput = document.getElementById("dm-input");
+  let dmActive = false;
+  let idleTimer;
+  let typingIndicator;
 
-    // Subtle rumble each click
-    document.body.classList.add('rumble');
-    setTimeout(() => document.body.classList.remove('rumble'), 500);
+  const nonsenseResponses = [
+    "that’s not in stock.",
+    "check the shelves again.",
+    "we moved everything recently.",
+    "inventory fluctuates in the dark.",
+    "loss prevention is aware.",
+    "…did you clock in?",
+  ];
 
-    // === Click 1: shrink stage 1 ===
-    if (clickStage === 1) {
-      document.body.classList.add('shrink-1');
-      btn.textContent = "you can't";
-
-    // === Click 2: shrink stage 2 ===
-    } else if (clickStage === 2) {
-      document.body.classList.remove('shrink-1');
-      document.body.classList.add('shrink-2');
-      btn.textContent = "stop";
-
-    // === Click 3: final stage ===
-    } else if (clickStage === 3) {
-      document.body.classList.remove('shrink-2');
-      document.body.classList.add('shrink-3');
-      btn.textContent = "YOU ARE HERE NOW";
-      btn.classList.add('final-stage');
-
-      // Start spawning extra buttons
-      startButtonStorm();
-
-    // === Click 4+: glitch flash + redirect ===
-    } else if (clickStage > 3) {
-      clearInterval(stormInterval);
-
-      const glitch = document.createElement('div');
-      glitch.className = 'glitch-flash';
-      document.body.appendChild(glitch);
-
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1200);
-    }
-  });
-
-  /* === Create random buttons after final stage === */
-  function startButtonStorm() {
-    const phrases = ["no", "now open", "on sale", "today only", "let go of me"];
-    const body = document.body;
-
-    let totalSpawned = 0;
-    const maxButtons = 25;
-
-    stormInterval = setInterval(() => {
-      if (totalSpawned >= maxButtons) {
-        clearInterval(stormInterval);
-        return;
-      }
-      totalSpawned++;
-
-      const clone = document.createElement('button');
-      clone.className = 'btn clone-btn';
-      clone.textContent = phrases[Math.floor(Math.random() * phrases.length)];
-
-      // Match size roughly to final-stage button
-      clone.style.position = 'fixed';
-      clone.style.top = `${Math.random() * 90 + 5}%`;
-      clone.style.left = `${Math.random() * 90 + 5}%`;
-      clone.style.transform = `translate(-50%, -50%) scale(${0.9 + Math.random() * 0.3})`;
-      clone.style.zIndex = 9997;
-      clone.style.opacity = '0';
-      clone.style.transition = 'opacity 0.4s ease, transform 0.3s ease';
-      clone.style.background = 'var(--gap-blue)';
-      clone.style.color = 'white';
-      clone.style.padding = '2rem 4rem';
-      clone.style.textTransform = 'uppercase';
-      clone.style.letterSpacing = '1px';
-      clone.style.boxShadow = '0 0 20px rgba(0,0,0,0.4)';
-
-      body.appendChild(clone);
-
-      // Fade in and rumble
-      requestAnimationFrame(() => {
-        clone.style.opacity = '1';
-        clone.style.transform += ' rotate(' + (Math.random() * 10 - 5) + 'deg)';
-        document.body.classList.add('rumble');
-        setTimeout(() => document.body.classList.remove('rumble'), 400);
-      });
-
-      // Optional random fade-out and removal after a few seconds
-      setTimeout(() => {
-        clone.style.opacity = '0';
-        setTimeout(() => clone.remove(), 1000);
-      }, 4000 + Math.random() * 3000);
-
-    }, 350); // frequency of spawning
+  function getClientInfo() {
+    const ua = navigator.userAgent || 'unknown';
+    const platform = navigator.platform || 'unknown';
+    const lang = navigator.language || 'unknown';
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
+    const screenW = window.screen?.width || '?';
+    const screenH = window.screen?.height || '?';
+    const touch = (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+    let browser = /firefox/i.test(ua) ? 'Firefox' :
+                  /edg/i.test(ua) ? 'Edge' :
+                  /chrome/i.test(ua) ? 'Chrome' :
+                  /safari/i.test(ua) ? 'Safari' : 'Unknown';
+    let os = /windows/i.test(ua) ? 'Windows' :
+             /mac os x/i.test(ua) ? 'macOS' :
+             /android/i.test(ua) ? 'Android' :
+             /iphone|ipad|ipod/i.test(ua) ? 'iOS' :
+             /linux/i.test(ua) ? 'Linux' : 'Unknown';
+    const deviceType = (touch && screenW < 900) ? 'mobile' : 'desktop';
+    return {browser, os, lang, tz, screen:`${screenW}×${screenH}`, deviceType};
   }
-}
 
-/* ===============================
-   DISTRICT MANAGER CHAT LOGIC v2
-   =============================== */
-
-let dmNotice = document.querySelector(".dm-notice");
-let dmChat = document.querySelector(".dm-chat");
-let dmMessages = dmChat?.querySelector(".dm-messages");
-let dmInput = document.getElementById("dm-input");
-let dmActive = false;
-let idleTimer;
-let typingIndicator;
-
-// --- creepy nonsense lines from v1 ---
-const nonsenseResponses = [
-  "that’s not in stock.",
-  "check the shelves again.",
-  "we moved everything recently.",
-  "inventory fluctuates in the dark.",
-  "loss prevention is aware.",
-  "…did you clock in?",
-];
-
-// --- safe client info ---
-function getClientInfo() {
-  const ua = navigator.userAgent || 'unknown';
-  const platform = navigator.platform || 'unknown';
-  const lang = navigator.language || 'unknown';
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
-  const screenW = window.screen?.width || '?';
-  const screenH = window.screen?.height || '?';
-  const touch = (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
-  let browser = /firefox/i.test(ua) ? 'Firefox' :
-                /edg/i.test(ua) ? 'Edge' :
-                /chrome/i.test(ua) ? 'Chrome' :
-                /safari/i.test(ua) ? 'Safari' : 'Unknown';
-  let os = /windows/i.test(ua) ? 'Windows' :
-           /mac os x/i.test(ua) ? 'macOS' :
-           /android/i.test(ua) ? 'Android' :
-           /iphone|ipad|ipod/i.test(ua) ? 'iOS' :
-           /linux/i.test(ua) ? 'Linux' : 'Unknown';
-  const deviceType = (touch && screenW < 900) ? 'mobile' : 'desktop';
-  return {browser, os, lang, tz, screen:`${screenW}×${screenH}`, deviceType};
-}
-
-// --- typing indicator ---
-function showTypingIndicator() {
-  typingIndicator = document.createElement("div");
-  typingIndicator.className = "dm-typing";
-  typingIndicator.innerHTML = "<span></span><span></span><span></span>";
-  dmMessages.appendChild(typingIndicator);
-  dmMessages.scrollTop = dmMessages.scrollHeight;
-}
-function hideTypingIndicator() {
-  if (typingIndicator) {
-    typingIndicator.remove();
-    typingIndicator = null;
-  }
-}
-
-// --- message helpers ---
-function showMessage(text, sender = "dm", delay = 600) {
-  showTypingIndicator();
-  setTimeout(() => {
-    hideTypingIndicator();
-    const msg = document.createElement("div");
-    msg.className = "dm-message" + (sender === "user" ? " user" : "");
-    msg.textContent = text;
-    dmMessages.appendChild(msg);
+  function showTypingIndicator() {
+    typingIndicator = document.createElement("div");
+    typingIndicator.className = "dm-typing";
+    typingIndicator.innerHTML = "<span></span><span></span><span></span>";
+    dmMessages.appendChild(typingIndicator);
     dmMessages.scrollTop = dmMessages.scrollHeight;
-  }, delay);
-}
+  }
+  function hideTypingIndicator() {
+    if (typingIndicator) {
+      typingIndicator.remove();
+      typingIndicator = null;
+    }
+  }
 
-// --- idle detection ---
-function startIdleTimer() {
-  clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => triggerAwareness(), 7000);
-}
-function resetIdleTimer() {
-  clearTimeout(idleTimer);
-  startIdleTimer();
-}
+  function showMessage(text, sender = "dm", delay = 600, distort = false) {
+    showTypingIndicator();
+    setTimeout(() => {
+      hideTypingIndicator();
+      const msg = document.createElement("div");
+      msg.className = "dm-message" + (sender === "user" ? " user" : "");
+      msg.textContent = text;
+      if (distort) msg.classList.add("distort-reveal");
+      dmMessages.appendChild(msg);
+      dmMessages.scrollTop = dmMessages.scrollHeight;
+      if (distort) setTimeout(() => msg.classList.remove("distort-reveal"), 2500);
+    }, delay);
+  }
 
-// --- creepy awareness if idle ---
-function triggerAwareness() {
-  const info = getClientInfo();
-  showMessage(`I can see you're on ${info.os}, using ${info.browser}...`);
-  setTimeout(() => showMessage(`So why don't you ask for help!`), 1600);
-  setTimeout(() => showMessage(`I'm always happy to help for you!`), 2800);
-  setTimeout(() => showMessage(`Just ask! Help!`), 3800);
-}
-
-// --- open chat ---
-function openChat() {
-  dmNotice.classList.remove("visible");
-  dmChat.classList.add("visible");
-
-  if (!dmActive) {
-    dmActive = true;
-
-    // optional notification sound
-    const ding = new Audio('assets/notify.mp3');
-    ding.volume = 0.2;
-    ding.play().catch(()=>{});
-
-    setTimeout(() => showMessage("👋 District Manager here."), 500);
-    setTimeout(() => showMessage("What are you looking for today?"), 2000);
+  function startIdleTimer() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => triggerAwareness(), 7000);
+  }
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
     startIdleTimer();
   }
-}
 
-// --- input handler ---
-if (dmInput) {
-  dmInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && dmInput.value.trim() !== "") {
-      const text = dmInput.value.trim();
-      dmInput.value = "";
-      showMessage(text, "user", 0);
-      resetIdleTimer();
+  function triggerAwareness() {
+    const info = getClientInfo();
+    showMessage(`I can see you're on ${info.os}, using ${info.browser}...`, "dm", 800, true);
+    setTimeout(() => showMessage(`So why don't you ask for help!`), 2200);
+    setTimeout(() => showMessage(`I'm always happy to help for you!`), 3600);
+    setTimeout(() => showMessage(`Just ask! Help!`), 4600);
+  }
 
-      // === product keyword triggers link ===
-      if (/shirt|jacket|jean|hoodie|product|item|sale/i.test(text)) {
-        setTimeout(() => showMessage("Would you like to check in the back?"), 1500);
-        setTimeout(() => {
-          const link = document.createElement("a");
-          link.href = "backroom.html";
-          link.textContent = "→ Check in the back";
-          link.className = "dm-message";
-          dmMessages.appendChild(link);
-          dmMessages.scrollTop = dmMessages.scrollHeight;
-        }, 3200);
-      } 
-      // === otherwise: creepy nonsense ===
-      else {
-        const msg = nonsenseResponses[Math.floor(Math.random() * nonsenseResponses.length)];
-        setTimeout(() => showMessage(msg), 1400);
-      }
+  function openChat() {
+    dmNotice.classList.remove("visible");
+    dmChat.classList.add("visible");
+
+    if (!dmActive) {
+      dmActive = true;
+      const ding = new Audio('assets/notify.mp3');
+      ding.volume = 0.2;
+      ding.play().catch(()=>{});
+      setTimeout(() => showMessage("👋 District Manager here."), 500);
+      setTimeout(() => showMessage("What are you looking for today?"), 2000);
+      startIdleTimer();
     }
-  });
-}
+  }
 
-// --- connect notice click opens chat ---
-if (dmNotice) {
-  dmNotice.addEventListener("click", openChat);
-}
+  if (dmInput) {
+    dmInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && dmInput.value.trim() !== "") {
+        const text = dmInput.value.trim();
+        dmInput.value = "";
+        showMessage(text, "user", 0);
+        resetIdleTimer();
 
+        if (/shirt|jacket|jean|hoodie|product|item|sale/i.test(text)) {
+          setTimeout(() => showMessage("Would you like to check in the back?"), 1500);
+          setTimeout(() => {
+            const link = document.createElement("a");
+            link.href = "backroom.html";
+            link.textContent = "→ Check in the back";
+            link.className = "dm-message";
+            dmMessages.appendChild(link);
+            dmMessages.scrollTop = dmMessages.scrollHeight;
+          }, 3200);
+        } else {
+          const msg = nonsenseResponses[Math.floor(Math.random() * nonsenseResponses.length)];
+          setTimeout(() => showMessage(msg), 1400);
+        }
+      }
+    });
+  }
 
+  if (dmNotice) dmNotice.addEventListener("click", openChat);
 
+  /* ============================================================
+     Distortion CSS Injector
+     ============================================================ */
+  function injectDistortionCSS() {
+    const style = document.createElement("style");
+    style.textContent = `
+      .dm-message.distort-reveal {
+        animation: distortFade 2.4s ease-in-out;
+        position: relative;
+      }
+      @keyframes distortFade {
+        0% { filter: contrast(180%) saturate(150%) blur(2px); opacity: 0; transform: skewX(6deg);}
+        10% { filter: none; opacity: 1; transform: skewX(0deg);}
+        40% { filter: hue-rotate(40deg) contrast(130%); }
+        60% { filter: none; }
+        85% { filter: blur(1px) contrast(200%); }
+        100% { filter: none; opacity: 1; transform: none; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
 })();
+
