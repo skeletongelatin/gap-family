@@ -252,135 +252,7 @@
     setTimeout(()=>{window.location.href='deep.html';},2200);
   }
 
-  /* ============================================================
-     DISTRICT MANAGER CHAT LOGIC + REVEAL DISTORTION
-     ============================================================ */
 
-  let dmNotice = document.querySelector(".dm-notice");
-  let dmChat = document.querySelector(".dm-chat");
-  let dmMessages = dmChat?.querySelector(".dm-messages");
-  let dmInput = document.getElementById("dm-input");
-  let dmActive = false;
-  let idleTimer;
-  let typingIndicator;
-
-  const nonsenseResponses = [
-    "that’s not in stock.",
-    "check the shelves again.",
-    "we moved everything recently.",
-    "inventory fluctuates in the dark.",
-    "loss prevention is aware.",
-    "…did you clock in?",
-  ];
-
-  function getClientInfo() {
-    const ua = navigator.userAgent || 'unknown';
-    const platform = navigator.platform || 'unknown';
-    const lang = navigator.language || 'unknown';
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
-    const screenW = window.screen?.width || '?';
-    const screenH = window.screen?.height || '?';
-    const touch = (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
-    let browser = /firefox/i.test(ua) ? 'Firefox' :
-                  /edg/i.test(ua) ? 'Edge' :
-                  /chrome/i.test(ua) ? 'Chrome' :
-                  /safari/i.test(ua) ? 'Safari' : 'Unknown';
-    let os = /windows/i.test(ua) ? 'Windows' :
-             /mac os x/i.test(ua) ? 'macOS' :
-             /android/i.test(ua) ? 'Android' :
-             /iphone|ipad|ipod/i.test(ua) ? 'iOS' :
-             /linux/i.test(ua) ? 'Linux' : 'Unknown';
-    const deviceType = (touch && screenW < 900) ? 'mobile' : 'desktop';
-    return {browser, os, lang, tz, screen:`${screenW}×${screenH}`, deviceType};
-  }
-
-  function showTypingIndicator() {
-    typingIndicator = document.createElement("div");
-    typingIndicator.className = "dm-typing";
-    typingIndicator.innerHTML = "<span></span><span></span><span></span>";
-    dmMessages.appendChild(typingIndicator);
-    dmMessages.scrollTop = dmMessages.scrollHeight;
-  }
-  function hideTypingIndicator() {
-    if (typingIndicator) {
-      typingIndicator.remove();
-      typingIndicator = null;
-    }
-  }
-
-  function showMessage(text, sender = "dm", delay = 600, distort = false) {
-    showTypingIndicator();
-    setTimeout(() => {
-      hideTypingIndicator();
-      const msg = document.createElement("div");
-      msg.className = "dm-message" + (sender === "user" ? " user" : "");
-      msg.textContent = text;
-      if (distort) msg.classList.add("distort-reveal");
-      dmMessages.appendChild(msg);
-      dmMessages.scrollTop = dmMessages.scrollHeight;
-      if (distort) setTimeout(() => msg.classList.remove("distort-reveal"), 2500);
-    }, delay);
-  }
-
-  function startIdleTimer() {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => triggerAwareness(), 7000);
-  }
-  function resetIdleTimer() {
-    clearTimeout(idleTimer);
-    startIdleTimer();
-  }
-
-  function triggerAwareness() {
-    const info = getClientInfo();
-    showMessage(`I can see you're on ${info.os}, using ${info.browser}...`, "dm", 800, true);
-    setTimeout(() => showMessage(`So why don't you ask for help!`), 2200);
-    setTimeout(() => showMessage(`I'm always happy to help for you!`), 3600);
-    setTimeout(() => showMessage(`Just ask! Help!`), 4600);
-  }
-
-  function openChat() {
-    dmNotice.classList.remove("visible");
-    dmChat.classList.add("visible");
-
-    if (!dmActive) {
-      dmActive = true;
-      const ding = new Audio('assets/notify.mp3');
-      ding.volume = 0.2;
-      ding.play().catch(()=>{});
-      setTimeout(() => showMessage("👋 District Manager here."), 500);
-      setTimeout(() => showMessage("What are you looking for today?"), 2000);
-      startIdleTimer();
-    }
-  }
-
-  if (dmInput) {
-    dmInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && dmInput.value.trim() !== "") {
-        const text = dmInput.value.trim();
-        dmInput.value = "";
-        showMessage(text, "user", 0);
-        resetIdleTimer();
-
-        if (/shirt|jacket|jean|hoodie|product|item|sale/i.test(text)) {
-          setTimeout(() => showMessage("Would you like to check in the back?"), 1500);
-          setTimeout(() => {
-            const link = document.createElement("a");
-            link.href = "backroom.html";
-            link.textContent = "→ Check in the back";
-            link.className = "dm-message";
-            dmMessages.appendChild(link);
-            dmMessages.scrollTop = dmMessages.scrollHeight;
-          }, 3200);
-        } else {
-          const msg = nonsenseResponses[Math.floor(Math.random() * nonsenseResponses.length)];
-          setTimeout(() => showMessage(msg), 1400);
-        }
-      }
-    });
-  }
-
-  if (dmNotice) dmNotice.addEventListener("click", openChat);
 
   /* ============================================================
      Distortion CSS Injector
@@ -403,6 +275,159 @@
     `;
     document.head.appendChild(style);
   }
+
+
+   document.addEventListener("DOMContentLoaded", () => {
+  const yearEl = document.getElementById("year2");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  const helpBubble = document.getElementById("help-bubble");
+  const helpChat = document.getElementById("help-chat");
+  const helpMessages = helpChat?.querySelector(".help-messages");
+  const helpInput = document.getElementById("help-input");
+
+  const dmNotice = document.getElementById("dm-notice");
+  const dmChat = document.getElementById("dm-chat");
+  const dmMessages = dmChat?.querySelector(".dm-messages");
+  const dmInput = document.getElementById("dm-input");
+
+  if (!helpBubble || !helpChat || !helpMessages || !helpInput || !dmNotice || !dmChat || !dmMessages || !dmInput) return;
+
+  // --- Toggle help chat ---
+  helpBubble.addEventListener("click", () => {
+    helpChat.classList.toggle("visible");
+  });
+
+  // --- Help message submission ---
+  helpInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && helpInput.value.trim() !== "") {
+      const text = helpInput.value.trim();
+      addHelpMessage("user", text);
+      helpInput.value = "";
+      setTimeout(() => {
+        addHelpMessage("bot", "Our help desk is currently offline. Please check back during business hours.");
+      }, 800);
+
+      // trigger district manager sequence after 1 second
+      setTimeout(() => {
+        dmNotice.classList.add("visible");
+      }, 1800);
+    }
+  });
+
+  // === District Manager Chat Sequence ===
+  dmNotice.addEventListener("click", () => {
+    dmNotice.style.display = "none";
+    dmChat.classList.add("visible");
+    addDMMessage("system", "District Manager is typing...");
+    setTimeout(() => {
+      dmMessages.innerHTML = "";
+      addDMMessage("dm", "What are you looking for?");
+    }, 1500);
+  });
+
+  dmInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && dmInput.value.trim() !== "") {
+      const text = dmInput.value.trim();
+      addDMMessage("user", text);
+      dmInput.value = "";
+      handleDMResponse(text);
+    }
+  });
+
+  // --- Helper functions ---
+  function addHelpMessage(type, text) {
+    const msg = document.createElement("div");
+    msg.classList.add("help-message", type);
+    msg.textContent = text;
+    helpMessages.appendChild(msg);
+    helpMessages.scrollTop = helpMessages.scrollHeight;
+  }
+
+  function addDMMessage(type, text) {
+    const msg = document.createElement("div");
+    msg.classList.add("dm-message", type);
+    msg.textContent = text;
+    dmMessages.appendChild(msg);
+    dmMessages.scrollTop = dmMessages.scrollHeight;
+  }
+
+  function dmTyping(callback, delay = 1200) {
+    const typingEl = document.createElement("div");
+    typingEl.classList.add("dm-typing");
+    typingEl.innerHTML = "<span></span><span></span><span></span>";
+    dmMessages.appendChild(typingEl);
+    dmMessages.scrollTop = dmMessages.scrollHeight;
+    setTimeout(() => {
+      typingEl.remove();
+      callback();
+    }, delay);
+  }
+
+  function handleDMResponse(input) {
+    const lower = input.toLowerCase();
+    const productKeywords = ["shirt", "jeans", "jacket", "pants", "khakis", "sweater", "hoodie"];
+    const nonsense = [
+      "that’s not in stock.",
+      "check the shelves again.",
+      "we moved everything recently.",
+      "inventory fluctuates in the dark.",
+      "loss prevention is aware.",
+      "…did you clock in?",
+    ];
+
+    dmTyping(() => {
+      if (productKeywords.some(word => lower.includes(word))) {
+        addDMMessage("dm", "Would you like to check in the back?");
+        const link = document.createElement("a");
+        link.href = "backroom.html";
+        link.textContent = "Check in the back →";
+        link.style.display = "block";
+        link.style.color = "#003366";
+        link.style.marginTop = "0.3rem";
+        dmMessages.appendChild(link);
+      } else {
+        addDMMessage("dm", nonsense[Math.floor(Math.random() * nonsense.length)]);
+      }
+    });
+  }
+
+  // --- Reveal client info if idle ---
+  let idleTimer;
+  const resetIdle = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => revealClientInfo(), 7000);
+  };
+  document.addEventListener("mousemove", resetIdle);
+  document.addEventListener("keydown", resetIdle);
+  resetIdle();
+
+  function revealClientInfo() {
+    const ua = navigator.userAgent;
+    const platform = navigator.platform || "unknown device";
+    const dmDistort = document.createElement("div");
+    dmDistort.classList.add("dm-distort");
+    dmChat.appendChild(dmDistort);
+
+    dmTyping(() => {
+      addDMMessage("dm", `I can see you’re on ${platform} using ${getBrowserName(ua)}…`);
+      dmTyping(() => {
+        addDMMessage("dm", "So why don’t you ask for help! I’m always happy to help for you! Just ask! Help!");
+      }, 1800);
+    }, 1500);
+
+    setTimeout(() => dmDistort.remove(), 2000);
+  }
+
+  function getBrowserName(ua) {
+    if (ua.includes("Chrome")) return "Chrome";
+    if (ua.includes("Firefox")) return "Firefox";
+    if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
+    if (ua.includes("Edge")) return "Edge";
+    return "an unknown browser";
+  }
+});
+
 
 })();
 
