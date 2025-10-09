@@ -632,6 +632,62 @@ body.rumble {
   font-size: 0.8rem;
   padding: 0.3rem 0;
 }
+/* ============================================================
+   DON’T GO — Final Stage Window Chaos
+   ============================================================ */
+.dont-go-container {
+  position: fixed; inset: 0; overflow: hidden; z-index: 9997; pointer-events: none;
+}
+
+.dont-go-window {
+  position: absolute;
+  background: var(--accent);
+  border: 1px solid var(--gap-blue);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  opacity: 0; transform: scale(0);
+  pointer-events: none;
+  animation: dgWindowPop 0.6s forwards;
+}
+
+@keyframes dgWindowPop {
+  0% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.1) rotate(var(--dg-rotate)); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+.dont-go-window.wiggle { animation: dgWiggle 0.8s infinite alternate; }
+
+@keyframes dgWiggle {
+  0% { transform: translate(0,0) rotate(-1deg); }
+  50% { transform: translate(1px,-1px) rotate(1deg); }
+  100% { transform: translate(-1px,1px) rotate(-1deg); }
+}
+
+
+/* Shake + blur effect */
+.shake-blur {
+  animation: shakeBlur 0.6s ease-in-out;
+}
+
+@keyframes shakeBlur {
+  0% { transform: translate(0,0); filter: blur(0px); }
+  20% { transform: translate(-6px, 4px); filter: blur(1.5px); }
+  40% { transform: translate(5px, -3px); filter: blur(2px); }
+  60% { transform: translate(-4px, 2px); filter: blur(1.5px); }
+  80% { transform: translate(3px, -2px); filter: blur(1px); }
+  100% { transform: translate(0,0); filter: blur(0px); }
+}
+
+/* Shake + blur effect */
+@keyframes shakeBlur {
+  0% { transform: translate(0,0); filter: blur(0px); }
+  20% { transform: translate(-6px, 4px); filter: blur(1.5px); }
+  40% { transform: translate(5px, -3px); filter: blur(2px); }
+  60% { transform: translate(-4px, 2px); filter: blur(1.5px); }
+  80% { transform: translate(3px, -2px); filter: blur(1px); }
+  100% { transform: translate(0,0); filter: blur(0px); }
+}
 
 
 /* ============================================================

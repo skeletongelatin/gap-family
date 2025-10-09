@@ -44,6 +44,7 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
     injectDistortionCSS();
     setupHelpAndDMChat();
+    setupDeepButtonSequence(); // ← call deep button sequence here
   });
 
   /* ============================================================
@@ -132,56 +133,50 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   /* ============================================================
   GAP sequence
   ============================================================ */
-function setupGapSequence() {
-  const required = ['g', 'a', 'p'];
-  let progress = [];
+  function setupGapSequence() {
+    const required = ['g', 'a', 'p'];
+    let progress = [];
 
-  // preload click sound
-  const clickSound = new Audio('assets/keyclick.mp3');
-  clickSound.volume = 0.3;
+    const clickSound = new Audio('assets/keyclick.mp3');
+    clickSound.volume = 0.3;
 
-  // --- DESKTOP keyboard sequence ---
-  window.addEventListener('keydown', e => {
-    const k = e.key.toLowerCase();
-    if (required.includes(k)) {
-      playKeyClick();
-      progress.push(k);
-      checkGapProgress();
-    }
-  });
-
-  // --- MOBILE key images ---
-  const keyEls = document.querySelectorAll('.gap-key');
-  keyEls.forEach(el => {
-    el.addEventListener('click', () => {
-      const k = el.dataset.key;
-      playKeyClick();
-      el.classList.add('pressed');
-      setTimeout(() => el.classList.remove('pressed'), 150);
-      progress.push(k);
-      checkGapProgress();
+    window.addEventListener('keydown', e => {
+      const k = e.key.toLowerCase();
+      if (required.includes(k)) {
+        playKeyClick();
+        progress.push(k);
+        checkGapProgress();
+      }
     });
-  });
 
-  // --- Shared helpers ---
-  function playKeyClick() {
-    // Restart sound each time for quick taps
-    const s = clickSound.cloneNode();
-    s.volume = 0.3;
-    s.play().catch(() => {});
-  }
+    const keyEls = document.querySelectorAll('.gap-key');
+    keyEls.forEach(el => {
+      el.addEventListener('click', () => {
+        const k = el.dataset.key;
+        playKeyClick();
+        el.classList.add('pressed');
+        setTimeout(() => el.classList.remove('pressed'), 150);
+        progress.push(k);
+        checkGapProgress();
+      });
+    });
 
-  function checkGapProgress() {
-    if (progress.join('') === required.join('')) {
-      playWhisperOnce(true);
-      triggerLightsOut();
-      progress = [];
-    } else if (progress.join('') !== required.slice(0, progress.length).join('')) {
-      progress = [];
+    function playKeyClick() {
+      const s = clickSound.cloneNode();
+      s.volume = 0.3;
+      s.play().catch(() => {});
+    }
+
+    function checkGapProgress() {
+      if (progress.join('') === required.join('')) {
+        playWhisperOnce(true);
+        triggerLightsOut();
+        progress = [];
+      } else if (progress.join('') !== required.slice(0, progress.length).join('')) {
+        progress = [];
+      }
     }
   }
-}
-
 
   /* ============================================================
   District Manager Photo
@@ -381,4 +376,117 @@ function setupGapSequence() {
       }, 7000);
     }
   }
+
+/* ============================================================
+Deep Page Button Sequence
+============================================================ */
+function setupDeepButtonSequence() {
+  if (document.body.dataset.page !== "deep") return;
+
+  const btn = document.getElementById("weirdButton");
+  if (!btn) return;
+
+  btn.style.position = "relative";
+  btn.style.zIndex = "10";
+
+  let clickStage = 0;
+
+  btn.addEventListener("click", () => {
+    clickStage++;
+
+    if (clickStage === 1) {
+      document.body.classList.add("shrink-1");
+      btn.textContent = "you can’t";
+    } else if (clickStage === 2) {
+      document.body.classList.remove("shrink-1");
+      document.body.classList.add("shrink-2");
+      btn.textContent = "stop";
+    } else if (clickStage === 3) {
+      document.body.classList.remove("shrink-2");
+      document.body.classList.add("shrink-3");
+      btn.textContent = "YOU ARE HERE NOW";
+      btn.classList.add("final-stage");
+
+      spawnPromoStorm();
+
+      const rumbleInterval = setInterval(() => {
+        document.body.classList.add("rumble");
+        setTimeout(() => document.body.classList.remove("rumble"), 400);
+      }, 2500);
+
+      setTimeout(() => clearInterval(rumbleInterval), 15000);
+    } 
+    // Progressive shake+blur
+    else if (clickStage === 4 || clickStage === 5) {
+      const intensity = clickStage === 4 ? 1 : 1.7; // stronger on 5th click
+      document.body.style.animation = `shakeBlur ${0.6 * intensity}s ease-in-out`;
+      setTimeout(() => {
+        document.body.style.animation = "";
+      }, 600 * intensity);
+
+      btn.textContent = clickStage === 4 ? "almost..." : "LAST CHANCE";
+    } 
+    // Final click: white flash then redirect
+    else if (clickStage === 6) {
+      const flash = document.createElement("div");
+      flash.style.position = "fixed";
+      flash.style.top = "0";
+      flash.style.left = "0";
+      flash.style.width = "100%";
+      flash.style.height = "100%";
+      flash.style.background = "white";
+      flash.style.zIndex = "9999";
+      flash.style.opacity = "0";
+      flash.style.transition = "opacity 0.3s ease";
+      document.body.appendChild(flash);
+      requestAnimationFrame(() => { flash.style.opacity = "1"; });
+      setTimeout(() => window.location.href = "index.html", 350);
+    } 
+  });
+
+  function spawnPromoStorm() {
+    const messages = ["NO", "NOW OPEN", "ON SALE", "DON’T WAIT", "FOREVER OPEN", "LIMITED TIME", "TODAY ONLY", "JOIN US", "OPEN LATE", "YOU CAN’T LEAVE"];
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    const stormContainer = document.createElement("div");
+    stormContainer.style.position = "absolute";
+    stormContainer.style.top = "0";
+    stormContainer.style.left = "0";
+    stormContainer.style.width = "100%";
+    stormContainer.style.height = "100%";
+    stormContainer.style.zIndex = "1"; // behind weird-btn
+    document.querySelector(".content").appendChild(stormContainer);
+
+    const total = 150;
+    let count = 0;
+
+    const interval = setInterval(() => {
+      if (count >= total) {
+        clearInterval(interval);
+        return;
+      }
+
+      const promo = document.createElement("div");
+      promo.className = "storm-btn static";
+      promo.textContent = messages[Math.floor(Math.random() * messages.length)];
+
+      const x = Math.random() * stormContainer.clientWidth;
+      const y = Math.random() * stormContainer.clientHeight;
+
+      promo.style.position = "absolute";
+      promo.style.left = `${x}px`;
+      promo.style.top = `${y}px`;
+      promo.style.transform = `translate(-50%, -50%) rotate(${(Math.random() - 0.5) * 30}deg) scale(${0.7 + Math.random() * 0.6})`;
+      promo.style.opacity = `${0.7 + Math.random() * 0.3}`;
+      promo.style.zIndex = "1"; // behind weird-btn
+
+      stormContainer.appendChild(promo);
+
+      count++;
+    }, 15);
+  }
+}
+
+
 })();
