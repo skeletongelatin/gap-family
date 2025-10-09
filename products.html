@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css">
   <script defer src="script.js"></script>
 </head>
-<body class="vintage">
+<body class="vintage" data-page="products">
   <header class="site-header">
     <div class="wrap">
       <a href="index.html" class="logo"><img src="assets/logo.png" alt="gap"></a>
@@ -47,23 +47,22 @@
     </div>
   </footer>
 
-<!-- === Help Desk Bubble + Chat === -->
-<div id="help-bubble" class="help-bubble">💬</div>
+  <!-- === Help Desk Bubble + Chat === -->
+  <div id="help-bubble" class="help-bubble">💬</div>
 
-<div id="help-chat" class="help-chat">
-  <div class="help-header">Customer Support</div>
-  <div class="help-messages"></div>
-  <input type="text" id="help-input" placeholder="Type your message..." autocomplete="off">
-</div>
+  <div id="help-chat" class="help-chat">
+    <div class="help-header">Customer Support</div>
+    <div class="help-messages"></div>
+    <input type="text" id="help-input" placeholder="Type your message..." autocomplete="off">
+  </div>
 
-<!-- === District Manager Chat (hidden until triggered) === -->
-<div id="dm-notice" class="dm-notice">🟢 district manager is online</div>
+  <!-- === District Manager Notice + Chat === -->
+  <div id="dm-notice" class="dm-notice">District Manager Online</div>
 
-<div id="dm-chat" class="dm-chat">
-  <div class="dm-header">District Manager</div>
-  <div class="dm-messages"></div>
-  <input type="text" id="dm-input" placeholder="Type a message..." autocomplete="off">
-</div>
-
+  <div id="dm-chat" class="dm-chat">
+    <div class="dm-header">District Manager</div>
+    <div class="dm-messages"></div>
+    <input type="text" id="dm-input" placeholder="Type your message..." autocomplete="off">
+  </div>
 </body>
 </html>
