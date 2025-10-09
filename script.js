@@ -1,7 +1,7 @@
 /* ============================================================
-script.js (The Gap Family, Oct 2025 — Stable Working Version)
-============================================================ */
-
+   script.js (The Gap Family, Oct 2025 — Stable Working Version)
+   Mobile key click fix + robust audio handling
+   ============================================================ */
 (function() {
   const PAGE_IDS = ['index','products','about'];
   const deepLoopKey = 'tgf_deep_loop';
@@ -34,21 +34,24 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
     }
 
     if (localStorage.getItem(deepLoopKey) === '1') applyDeepLoopVisuals();
+
     applySurfaceQuirks();
     setupLogoSequence();
     setupGradualTransition();
     setupChimeTest();
-    setupGapSequence();
+    setupGapSequence();            // desktop + mobile unified
     setupDistrictManagerPhoto();
+
     if (localStorage.getItem(deepLoopKey) === '1')
       setTimeout(maybeShowOverlay, 2500 + Math.random()*6000);
+
     injectDistortionCSS();
     setupHelpAndDMChat();
   });
 
   /* ============================================================
-  Surface quirks
-  ============================================================ */
+     Surface quirks
+     ============================================================ */
   function applySurfaceQuirks() {
     qAll('.promo,.product,.member').forEach(el=>{
       if (Math.random()<0.28){
@@ -72,8 +75,8 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   }
 
   /* ============================================================
-  Deep Loop visuals
-  ============================================================ */
+     Deep Loop visuals
+     ============================================================ */
   function enableDeepLoop(reason){
     try{localStorage.setItem(deepLoopKey,'1');}catch(e){}
     applyDeepLoopVisuals();
@@ -86,8 +89,8 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   }
 
   /* ============================================================
-  Gradual transition
-  ============================================================ */
+     Gradual transition bright→dim
+     ============================================================ */
   function setupGradualTransition(){
     if(Math.random()<0.06&&localStorage.getItem(deepLoopKey)!=='1'){
       setTimeout(()=>{
@@ -95,18 +98,18 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
         setTimeout(()=>{
           if(localStorage.getItem(deepLoopKey)!=='1'&&Math.random()<0.4)
             setTimeout(()=>document.body.classList.remove('deep-loop'),
-              4000+Math.random()*6000);
+                       4000+Math.random()*6000);
         },12000);
       },1000+Math.random()*3200);
     }
   }
 
   /* ============================================================
-  Logo click
-  ============================================================ */
+     Logo click
+     ============================================================ */
   function setupLogoSequence(){
     const logo=q('.logo img');
-    if(!logo)return;
+    if(!logo) return;
     let clicks=0,last=0;
     logo.addEventListener('click',()=>{
       const now=Date.now();
@@ -118,77 +121,110 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   }
 
   /* ============================================================
-  Manual chime test
-  ============================================================ */
+     Manual chime test (C)
+     ============================================================ */
   function setupChimeTest(){
     window.addEventListener('keydown',e=>{
-      if(e.key.toLowerCase()==='c' && !sessionStorage.getItem(chimePlayedKey)){
+      if(e.key && e.key.toLowerCase()==='c' && !sessionStorage.getItem(chimePlayedKey)){
         sessionStorage.setItem(chimePlayedKey,'1');
         playWhisperOnce(true);
       }
     });
   }
 
-/* ============================================================
-  GAP sequence (desktop + mobile)
-  ============================================================ */
-function setupGapSequence() {
-  const required = ['g','a','p'];
-  let progress = [];
+  /* ============================================================
+     Unified GAP sequence — desktop keys + mobile taps (fixed)
+     ============================================================ */
+  function setupGapSequence() {
+    const required = ['g','a','p'];
+    let progress = [];
 
-  // --- desktop typing ---
-  window.addEventListener('keydown', e => {
-    const k = e.key.toLowerCase();
-    if (!required.includes(k)) return;
-
-    playKeyClick(); // play click for keyboard too
-    progress.push(k);
-    checkSequence(progress, required);
-  });
-
-  // --- mobile tapping ---
-  const keys = qAll('.gap-key');
-  if (keys.length) {
-    let tapProgress = [];
-    keys.forEach(kEl => {
-      kEl.addEventListener('click', ev => {
-        ev.preventDefault();
-        ev.stopPropagation();
-
-        playKeyClick();
-        kEl.classList.add('pressed');
-        setTimeout(()=>kEl.classList.remove('pressed'),150);
-
-        tapProgress.push(kEl.dataset.key);
-        checkSequence(tapProgress, required);
-      });
-    });
-  }
-
-  function playKeyClick() {
+    // prepare a reusable base audio for click (preload)
+    let keyClickBase = null;
     try {
-      const click = new Audio('assets/keyclick.mp3');
-      click.volume = 0.4;
-      click.play().catch(()=>{});
-    } catch(e){}
-  }
-
-  function checkSequence(arr, ref) {
-    if (arr.join('') === ref.join('')) {
-      triggerLightsOut();
-      arr.length = 0;
-    } else if (arr.join('') !== ref.slice(0, arr.length).join('')) {
-      arr.length = 0;
+      keyClickBase = new Audio('assets/keyclick.mp3');
+      keyClickBase.preload = 'auto';
+    } catch (e) {
+      keyClickBase = null;
     }
+
+    function playKeyClick() {
+      // Try to play a clone of the preloaded audio (more reliable on mobile)
+      if (keyClickBase) {
+        try {
+          const a = keyClickBase.cloneNode();
+          a.volume = 0.45;
+          a.currentTime = 0;
+          a.play().catch(()=>{});
+          return;
+        } catch (err) {
+          // fall through to fallback creation
+        }
+      }
+      // fallback: create a fresh instance
+      try {
+        const a2 = new Audio('assets/keyclick.mp3');
+        a2.volume = 0.45;
+        a2.play().catch(()=>{});
+      } catch(e){}
+    }
+
+    function pressVisualForKey(k) {
+      const el = q(`.gap-key[data-key="${k}"]`);
+      if (el) {
+        el.classList.add('pressed');
+        setTimeout(()=>el.classList.remove('pressed'), 150);
+      }
+    }
+
+    function checkSequence(arr) {
+      const joined = arr.join('');
+      if (joined === required.join('')) {
+        // small delay lets the click audio start playing before transition
+        setTimeout(()=> triggerLightsOut(), 80);
+        arr.length = 0;
+      } else if (joined !== required.slice(0, arr.length).join('')) {
+        // wrong order: reset
+        arr.length = 0;
+      }
+    }
+
+    // Desktop typing
+    window.addEventListener('keydown', (e) => {
+      if (!e.key) return;
+      const k = e.key.toLowerCase();
+      if (!required.includes(k)) return;
+      // treat this as a user gesture for audio
+      playKeyClick();
+      pressVisualForKey(k);
+      progress.push(k);
+      checkSequence(progress);
+    });
+
+    // Mobile / pointer taps (delegated)
+    // Use pointerdown for immediate response; check closest .gap-key
+    document.addEventListener('pointerdown', (ev) => {
+      const kEl = ev.target.closest && ev.target.closest('.gap-key');
+      if (!kEl) return;
+      // user gesture: play click, show press, add to sequence
+      playKeyClick();
+      const k = kEl.dataset && kEl.dataset.key;
+      if (!k) return;
+      kEl.classList.add('pressed');
+      setTimeout(()=>kEl.classList.remove('pressed'), 150);
+      progress.push(k);
+      checkSequence(progress);
+      // prevent accidental dragging of images
+      ev.preventDefault();
+    }, { passive: false });
   }
-}
 
   /* ============================================================
-  District Manager Photo
-  ============================================================ */
+     District Manager Photo (About)
+     ============================================================ */
   function setupDistrictManagerPhoto(){
     const img = q('img[src*="employee2.jpg"]');
-    if(!img)return;
+    if(!img) return;
     let clickCount = 0;
     const maxClicks = 5;
     img.addEventListener('click',()=>{
@@ -208,41 +244,62 @@ function setupGapSequence() {
   }
 
   /* ============================================================
-  Whisper chime
-  ============================================================ */
+     Whisper chime
+     ============================================================ */
   function playWhisperOnce(force=false){
-    if(!force && Math.random()>0.06)return;
-    const audio=new Audio('assets/whisper-clip.mp3');
-    audio.volume=0.1;
-    audio.play().catch(()=>{});
+    if(!force && Math.random()>0.06) return;
+    try {
+      const audio=new Audio('assets/whisper-clip.mp3');
+      audio.volume=0.1;
+      audio.play().catch(()=>{});
+    } catch(e){}
   }
 
   /* ============================================================
-  Lights-Out Transition
-  ============================================================ */
+     RNG overlay (rare)
+     ============================================================ */
+  function maybeShowOverlay(){
+    if(Math.random()>0.05) return;
+    const overlay=document.createElement('div');
+    overlay.className='rng-overlay';
+    overlay.innerHTML=`<button class="overlay-btn">continue</button>`;
+    document.body.appendChild(overlay);
+    playWhisperOnce(true);
+    requestAnimationFrame(()=>overlay.classList.add('visible'));
+    const close=()=>{
+      overlay.classList.remove('visible');
+      setTimeout(()=>overlay.remove(),1200);
+      playWhisperOnce(true);
+    };
+    overlay.querySelector('button').addEventListener('click',close);
+    window.addEventListener('keydown',e=>{if(e.key==='Escape')close();},{once:true});
+  }
+
+  /* ============================================================
+     Lights-Out Transition → Deep Page
+     ============================================================ */
   function triggerLightsOut(){
     const existing=document.querySelector('.lights-out');
-    if(existing)existing.remove();
+    if(existing) existing.remove();
     const overlay=document.createElement('div');
     overlay.className='lights-out';
     document.body.appendChild(overlay);
     void overlay.offsetWidth;
     setTimeout(()=>overlay.classList.add('visible'),50);
     const chime=new Audio('assets/whisper-clip.mp3');
-    chime.volume=0.6;chime.play().catch(()=>{});
+    chime.volume=0.6;
+    chime.play().catch(()=>{});
     console.log('⚫ Lights out triggered — redirecting soon');
-    setTimeout(()=>{window.location.href='deep.html';},2200);
+    setTimeout(()=>{ window.location.href='deep.html'; }, 2200);
   }
 
   /* ============================================================
-  Distortion CSS
-  ============================================================ */
+     Distortion CSS Injector
+     ============================================================ */
   function injectDistortionCSS(){
     const style=document.createElement("style");
     style.textContent=`
-      .dm-message.distort-reveal {
-        animation: distortFade 2.4s ease-in-out;
-      }
+      .dm-message.distort-reveal { animation: distortFade 2.4s ease-in-out; }
       @keyframes distortFade {
         0% { filter: contrast(180%) saturate(150%) blur(2px); opacity: 0; transform: skewX(6deg);}
         10% { filter: none; opacity: 1; transform: skewX(0deg);}
@@ -256,8 +313,8 @@ function setupGapSequence() {
   }
 
   /* ============================================================
-  Unified Helpdesk + DM Chat
-  ============================================================ */
+     Unified Helpdesk + District Manager Chat (unchanged)
+     ============================================================ */
   function setupHelpAndDMChat(){
     const helpBubble = document.querySelector("#help-bubble");
     const helpChat = document.querySelector("#help-chat");
@@ -307,12 +364,14 @@ function setupGapSequence() {
         if (!districtOnline) {
           showTyping(() => {
             addMessage("bot", "We’re currently outside help desk business hours.");
+
             setTimeout(() => {
               const systemMsg = document.createElement("div");
               systemMsg.className = "help-message system";
               systemMsg.textContent = "DISTRICT MANAGER has joined the chat...";
               helpMessages.appendChild(systemMsg);
               helpMessages.scrollTop = helpMessages.scrollHeight;
+
               setTimeout(startDistrictManager, 1800);
             }, 1500);
           }, 1200);
@@ -381,5 +440,6 @@ function setupGapSequence() {
       }, 7000);
     }
   }
+
 })();
 
