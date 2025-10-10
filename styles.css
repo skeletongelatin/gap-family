@@ -734,3 +734,52 @@ body.post-gap .hero-image {
     display: flex !important;
   }
 }
+
+.site-header .logo img {
+  height: 95px;
+  width: auto;
+  display: block;
+}
+
+
+/* === Help Bubble Styling - Bigger Version === */
+#help-bubble {
+  width: 90px;            /* bigger bubble */
+  height: 90px;           /* bigger bubble */
+  font-size: 2rem;        /* icon scales nicely inside */
+  border-radius: 50%;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gap-blue, #002f94);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  transition: transform 0.2s ease;
+  animation: floaty-wiggle 3.5s ease-in-out infinite;
+}
+
+/* Slight hover grow effect */
+#help-bubble:hover {
+  transform: scale(1.1);   /* slightly bigger hover */
+}
+
+/* Floating / wiggle animation */
+@keyframes floaty-wiggle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(-2deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(4px) rotate(2deg); }
+}
+
+/* Optional: smaller on mobile */
+@media (max-width: 768px) {
+  #help-bubble {
+    width: 70px;
+    height: 70px;
+    font-size: 1.6rem;
+  }
+}

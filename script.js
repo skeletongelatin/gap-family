@@ -134,6 +134,7 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
   GAP sequence
   ============================================================ */
   function setupGapSequence() {
+        if (document.body.dataset.page === 'products') return;
     const required = ['g', 'a', 'p'];
     let progress = [];
 
