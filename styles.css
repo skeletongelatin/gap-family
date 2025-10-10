@@ -43,6 +43,17 @@ body.vintage {
 .hero-image small {font-size: 14px; color: #e0e0e0;}
 .deep-loop .hero-image {filter: brightness(.65) contrast(.9);}
 
+/* ============================================================
+   Products Page Hero Image
+   ============================================================ */
+.products-hero {
+  background-image: url("assets/products-hero.jpg"); /* 👈 replace with your desired image */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .hero-image {
