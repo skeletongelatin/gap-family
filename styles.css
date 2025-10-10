@@ -13,7 +13,13 @@ body.vintage {
 
 .wrap {max-width: 980px; margin: 0 auto; padding: 18px;}
 .site-header {background:#fff;border-bottom:1px solid #e1e1e1;}
-.site-header .wrap {display:flex;align-items:center;justify-content:space-between;}
+.site-header .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* changed from space-between */
+  gap: 1.5rem; /* controls space between logo and nav links */
+}
+
 .nav a {margin-left:18px;text-decoration:none;color:var(--gap-blue);font-weight:600;}
 .nav a.join {font-style:italic;}
 .nav a:hover {text-decoration:underline;text-decoration-thickness:2px;transform:translateX(.5px);}
@@ -736,7 +742,7 @@ body.post-gap .hero-image {
 }
 
 .site-header .logo img {
-  height: 70px;
+  height: 95px;
   width: auto;
   display: block;
 }
