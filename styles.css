@@ -27,18 +27,33 @@ body.vintage {
 /* Hero image */
 .hero-image {
   background: url('assets/store-empty.jpg') center/cover no-repeat;
-  min-height: 60vh;
+  background-size: clamp(90%, 100vw, 120%);
+  min-height: 60vh;       /* default for desktop */
   display: flex;
   flex-direction: column;
   justify-content: center;
   color: white;
   text-shadow: 0 1px 6px rgba(0,0,0,.4);
-  transition: filter 2s ease, background-image 2s ease;
+  transition: filter 2s ease, background-image 2s ease, background-size 0.5s ease;
   padding: 40px;
 }
+
+/* Hero heading & subtext */
 .hero-image h1 {font-size: 40px; margin-bottom: 10px;}
 .hero-image small {font-size: 14px; color: #e0e0e0;}
 .deep-loop .hero-image {filter: brightness(.65) contrast(.9);}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .hero-image {
+    min-height: 50vh;             /* slightly shorter on phones */
+    padding: 20px;                /* reduce padding for small screens */
+    background-size: 100vw;       /* fill width fully on mobile */
+  }
+  .hero-image h1 {font-size: 28px;}  /* scale heading down */
+  .hero-image small {font-size: 12px;} /* scale subtext down */
+}
+
 
 /* Content area */
 .content {background:#fff;padding:20px;border:1px solid #eee;border-radius:3px;margin-top:-50px;position:relative;z-index:2;}
@@ -279,12 +294,11 @@ body.deep.dim-all .site-footer {
    Deep Page Final Sequence — YOU ARE HERE NOW + Glitch Return
    ============================================================ */
 
-/* === Shrink Stages (unchanged) === */
+/* === Shrink Stages — everything except button === */
 body.shrink-1 .main,
 body.shrink-1 .site-header,
 body.shrink-1 .site-footer {
   transform: scale(0.97);
-  filter: brightness(0.85);
   transition: all 0.4s ease;
 }
 
@@ -292,7 +306,6 @@ body.shrink-2 .main,
 body.shrink-2 .site-header,
 body.shrink-2 .site-footer {
   transform: scale(0.94);
-  filter: brightness(0.75);
   transition: all 0.4s ease;
 }
 
@@ -300,9 +313,16 @@ body.shrink-3 .main,
 body.shrink-3 .site-header,
 body.shrink-3 .site-footer {
   transform: scale(0.9);
-  filter: brightness(0.6);
   transition: all 0.4s ease;
 }
+
+/* === Keep final button the same size despite shrink === */
+body.shrink-1 .btn.final-stage,
+body.shrink-2 .btn.final-stage,
+body.shrink-3 .btn.final-stage {
+  transform: translate(-50%, -50%) scale(1); /* counteracts parent scale */
+}
+
 
 /* === Rumble Effect === */
 @keyframes subtleRumble {
@@ -379,7 +399,18 @@ body.rumble {
   z-index: 500;
   transition: opacity 0.3s ease, transform 0.4s ease;
   filter: brightness(1.2);
+
+  /* 🩵 fixes the rectangle glitch */
+  display: inline-flex;         /* keeps the button tight around text */
+  align-items: center;          /* centers text vertically */
+  justify-content: center;      /* centers text horizontally */
+  white-space: nowrap;          /* prevents text wrapping */
+  transform: scale(0.6);        /* defines its starting size */
+  width: auto !important;       /* overrides any stretched width */
+  height: auto !important;      /* overrides any stretched height */
+  box-sizing: border-box;       /* makes padding behave predictably */
 }
+
 
 .storm-btn.show {
   opacity: 1;
@@ -387,16 +418,19 @@ body.rumble {
 }
 
 @keyframes promoPulse {
-  0% { transform: scale(0.6) rotate(0deg); opacity: 0; }
+  0% { opacity: 0; } 
   50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
+
 
 .storm-btn.fade {
   opacity: 0;
   transform: scale(0.8);
   transition: opacity 0.8s ease, transform 0.8s ease;
 }
+
+
 
 /* ============================================================
    District Manager Chat — final styled + distortion reveal
@@ -651,23 +685,20 @@ body.rumble {
   border: 1px solid var(--gap-blue);
   border-radius: 4px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  opacity: 0; transform: scale(0);
+  opacity: 0;
+  transform: scale(0);
   pointer-events: none;
   animation: dgWindowPop 0.6s forwards;
-}
 
-@keyframes dgWindowPop {
-  0% { opacity: 0; transform: scale(0.2) rotate(0deg); }
-  50% { opacity: 1; transform: scale(1.1) rotate(var(--dg-rotate)); }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); }
-}
-
-.dont-go-window.wiggle { animation: dgWiggle 0.8s infinite alternate; }
-
-@keyframes dgWiggle {
-  0% { transform: translate(0,0) rotate(-1deg); }
-  50% { transform: translate(1px,-1px) rotate(1deg); }
-  100% { transform: translate(-1px,1px) rotate(-1deg); }
+  /* ✅ Keep shape consistent */
+  aspect-ratio: 4 / 1;         /* roughly match your small button’s shape */
+  display: inline-flex;         /* keep content centered */
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.2rem;       /* same padding as the normal button */
+  width: auto;                  /* let content define width */
+  height: auto;                 /* prevent stretching */
+  transform-origin: center;     /* ensure scale happens from center */
 }
 
 
@@ -788,4 +819,125 @@ body.post-gap .hero-image {
     height: 70px;
     font-size: 1.6rem;
   }
+}
+
+.btn.weird-btn {
+  position: fixed; /* floats above the shrinking content */
+  bottom: 10px;    /* or wherever you want it */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  font-size: 1.5rem;
+  padding: 1rem 2rem;
+  background: var(--gap-blue);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+}
+
+/* === Light Shudder for second click / shrink-2 === */
+body.shrink-2 .btn.weird-btn {
+  animation: shudderLight 0.12s ease-in-out infinite;
+}
+
+@keyframes shudderLight {
+  0%   { transform: translateX(0) translateY(0) rotate(0deg); }
+  25%  { transform: translateX(-1px) translateY(1px) rotate(-1deg); }
+  50%  { transform: translateX(1px) translateY(-1px) rotate(1deg); }
+  75%  { transform: translateX(-1px) translateY(1px) rotate(-1deg); }
+  100% { transform: translateX(0) translateY(0) rotate(0deg); }
+}
+
+/* === Intense Shudder for final version / shrink-3 === */
+body.shrink-3 .btn.weird-btn {
+  animation: shudder 0.08s ease-in-out infinite;
+}
+
+@keyframes shudder {
+  0%   { transform: translateX(0) translateY(0) rotate(0deg); }
+  10%  { transform: translateX(-3px) translateY(3px) rotate(-2deg); }
+  20%  { transform: translateX(3px) translateY(-3px) rotate(2deg); }
+  30%  { transform: translateX(-3px) translateY(3px) rotate(-2deg); }
+  40%  { transform: translateX(3px) translateY(-3px) rotate(2deg); }
+  50%  { transform: translateX(-2px) translateY(2px) rotate(-1deg); }
+  60%  { transform: translateX(2px) translateY(-2px) rotate(1deg); }
+  70%  { transform: translateX(-2px) translateY(2px) rotate(-1deg); }
+  80%  { transform: translateX(2px) translateY(-2px) rotate(1deg); }
+  90%  { transform: translateX(-2px) translateY(2px) rotate(-1deg); }
+  100% { transform: translateX(0) translateY(0) rotate(0deg); }
+}
+
+/* ============================================================
+   WEIRD BUTTON — Uniform Scaling + Intense Shake Fix
+   ============================================================ */
+
+.btn.weird-btn {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  font-size: 1.5rem;
+  padding: 1rem 2rem;
+  background: var(--gap-blue);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: 4px;
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+/* Light shudder on 2nd click (shrink-2) */
+body.shrink-2 .btn.weird-btn {
+  animation: shudderLight 0.12s ease-in-out infinite;
+}
+
+@keyframes shudderLight {
+  0%   { transform: translate(-50%, 0) rotate(0deg); }
+  25%  { transform: translate(calc(-50% - 1px), 1px) rotate(-1deg); }
+  50%  { transform: translate(calc(-50% + 1px), -1px) rotate(1deg); }
+  75%  { transform: translate(calc(-50% - 1px), 1px) rotate(-1deg); }
+  100% { transform: translate(-50%, 0) rotate(0deg); }
+}
+
+/* Intense shudder on final stage (shrink-3) */
+body.shrink-3 .btn.weird-btn {
+  animation: shudder 0.08s ease-in-out infinite;
+}
+
+@keyframes shudder {
+  0%   { transform: translate(-50%, 0) rotate(0deg); }
+  10%  { transform: translate(calc(-50% - 3px), 3px) rotate(-2deg); }
+  20%  { transform: translate(calc(-50% + 3px), -3px) rotate(2deg); }
+  30%  { transform: translate(calc(-50% - 3px), 3px) rotate(-2deg); }
+  40%  { transform: translate(calc(-50% + 3px), -3px) rotate(2deg); }
+  50%  { transform: translate(calc(-50% - 2px), 2px) rotate(-1deg); }
+  60%  { transform: translate(calc(-50% + 2px), -2px) rotate(1deg); }
+  70%  { transform: translate(calc(-50% - 2px), 2px) rotate(-1deg); }
+  80%  { transform: translate(calc(-50% + 2px), -2px) rotate(1deg); }
+  90%  { transform: translate(calc(-50% - 2px), 2px) rotate(-1deg); }
+  100% { transform: translate(-50%, 0) rotate(0deg); }
+}
+
+/* Final-stage version — uniform scaling */
+.weird-btn.final-stage {
+  transform: translate(-50%, -50%) scale(1);
+  top: 50%;
+  bottom: auto;
+  font-size: 2rem;
+  padding: 1.5rem 3rem;
+  box-shadow: 0 0 25px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease;
+}
+
+/* Enlarged mode (no stretching, scales from center) */
+.weird-btn.final-stage.enlarged {
+  transform: translate(-50%, -50%) scale(3);
 }

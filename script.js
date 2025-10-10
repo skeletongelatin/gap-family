@@ -407,7 +407,8 @@ script.js (The Gap Family, Oct 2025 — Stable Working Version)
         btn.textContent = "YOU ARE HERE NOW";
         btn.classList.add("final-stage");
 
-        spawnPromoStorm();
+        spawnDesktopOverrun(); // our new desktop-overrun function
+
 
         const rumbleInterval = setInterval(() => {
           document.body.classList.add("rumble");
@@ -445,48 +446,93 @@ else if (clickStage === 6) {
 
     });
 
-    function spawnPromoStorm() {
-      const messages = ["NO", "NOW OPEN", "ON SALE", "DON’T WAIT", "FOREVER OPEN", "LIMITED TIME", "TODAY ONLY", "JOIN US", "OPEN LATE", "YOU CAN’T LEAVE"];
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
+function spawnDesktopOverrun() {
+  const oldContainer = document.getElementById('overrun-container');
+  if (oldContainer) oldContainer.remove();
 
-      const stormContainer = document.createElement("div");
-      stormContainer.style.position = "absolute";
-      stormContainer.style.top = "0";
-      stormContainer.style.left = "0";
-      stormContainer.style.width = "100%";
-      stormContainer.style.height = "100%";
-      stormContainer.style.zIndex = "1"; // behind weird-btn
-      document.querySelector(".content").appendChild(stormContainer);
+  const container = document.createElement('div');
+  container.id = 'overrun-container';
+  Object.assign(container.style, {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 0,
+    pointerEvents: 'none',
+    overflow: 'hidden',
+  });
+  document.body.appendChild(container);
 
-      const total = 150;
-      let count = 0;
+  const messages = [
+    "NOW", "HURRY", "LIMITED", "JOIN",
+    "OPEN", "DON’T WAIT", "FOREVER", "CLICK ME"
+  ];
 
-      const interval = setInterval(() => {
-        if (count >= total) {
-          clearInterval(interval);
-          return;
-        }
+  // inject keyframes once
+  if (!document.getElementById("violentRumble")) {
+    const style = document.createElement("style");
+    style.id = "violentRumble";
+    style.textContent = `
+      @keyframes violentRumble {
+        0%   { transform: translate(-50%, -50%) rotate(0deg); }
+        20%  { transform: translate(calc(-50% + 3px), calc(-50% + 2px)) rotate(-1deg); }
+        40%  { transform: translate(calc(-50% - 3px), calc(-50% - 2px)) rotate(1deg); }
+        60%  { transform: translate(calc(-50% + 2px), calc(-50% - 3px)) rotate(-1deg); }
+        80%  { transform: translate(calc(-50% - 2px), calc(-50% + 3px)) rotate(1deg); }
+        100% { transform: translate(-50%, -50%) rotate(0deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
-        const promo = document.createElement("div");
-        promo.className = "storm-btn static";
-        promo.textContent = messages[Math.floor(Math.random() * messages.length)];
+  const maxButtons = 250;
+  let spawned = 0;
 
-        const x = Math.random() * stormContainer.clientWidth;
-        const y = Math.random() * stormContainer.clientHeight;
-
-        promo.style.position = "absolute";
-        promo.style.left = `${x}px`;
-        promo.style.top = `${y}px`;
-        promo.style.transform = `translate(-50%, -50%) rotate(${(Math.random() - 0.5) * 30}deg) scale(${0.7 + Math.random() * 0.6})`;
-        promo.style.opacity = `${0.7 + Math.random() * 0.3}`;
-        promo.style.zIndex = "1"; // behind weird-btn
-
-        stormContainer.appendChild(promo);
-
-        count++;
-      }, 15);
+  const spawnInterval = setInterval(() => {
+    if (spawned >= maxButtons) {
+      clearInterval(spawnInterval);
+      return;
     }
+
+    const btn = document.createElement('button');
+    btn.textContent = messages[Math.floor(Math.random() * messages.length)];
+    btn.className = 'weird-btn';
+    Object.assign(btn.style, {
+      position: 'absolute',
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`,
+      transform: 'translate(-50%, -50%)',
+      pointerEvents: 'none',
+      opacity: '1',
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      background: 'var(--gap-blue)',
+      color: 'white',
+      padding: '0.6rem 1.2rem',
+      borderRadius: '4px',
+      boxSizing: 'border-box',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      whiteSpace: 'nowrap',
+      animation: `violentRumble 0.15s infinite linear`, // 👈 harsh shake
+    });
+
+    container.appendChild(btn);
+    spawned++;
+  }, 10);
+}
+
+
+
+
+
+
+
+
+
+
   }
 
 })();
