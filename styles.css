@@ -689,6 +689,31 @@ body.rumble {
   100% { transform: translate(0,0); filter: blur(0px); }
 }
 
+/* Post-GAP closed version */
+body.post-gap .hero-image {
+  filter: brightness(0.7) contrast(1.2) saturate(0.8);
+  animation: flicker 2s infinite alternate;
+  transition: filter 1s ease, opacity 1s ease;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.92; }
+}
+
+.join.attention {
+  animation: wiggleFlash 0.6s ease-in-out infinite;
+}
+
+@keyframes wiggleFlash {
+  0% { transform: translateX(0); opacity: 1; }
+  25% { transform: translateX(-4px) rotate(-2deg); opacity: 0.9; }
+  50% { transform: translateX(4px) rotate(2deg); opacity: 1; }
+  75% { transform: translateX(-2px) rotate(-1deg); opacity: 0.95; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+
 
 /* ============================================================
    FINAL visibility fix for GAP section

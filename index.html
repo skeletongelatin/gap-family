@@ -9,6 +9,7 @@
   <script defer src="script.js"></script>
 </head>
 <body class="vintage" data-page="index">
+
   <header class="site-header">
     <div class="wrap">
       <a href="index.html" class="logo" id="logo">
@@ -23,21 +24,25 @@
   </header>
 
   <main class="wrap main">
+
     <section class="hero hero-image">
-      <h1>Opening Soon<br><small>Lloyd Center — Portland, OR</small></h1>
+      <h1>
+        Opening Soon<br>
+        <small>Lloyd Center — Portland, OR</small>
+      </h1>
       <p>We 'R' family. Come early. Stay as long as you like.</p>
     </section>
 
     <section class="gap-sequence">
       <p class="gap-instruction desktop-only">
         <em><strong>“Our website makes it as easy as 
-  <span class="gap-blink">
-    <span class="letter">G</span><span class="dash">-</span>
-    <span class="letter">A</span><span class="dash">-</span>
-    <span class="letter">P</span>
-  </span>!”
-</strong></em>
+          <span class="gap-blink">
+            <span class="letter">G</span><span class="dash">-</span>
+            <span class="letter">A</span><span class="dash">-</span>
+            <span class="letter">P</span>
+          </span>!”</strong></em>
       </p>
+
       <div class="gap-keys mobile-only">
         <p class="gap-instruction-mobile"><em><strong>Our website makes it as easy as–</strong></em></p>
         <img src="assets/key-g.png" alt="G key" class="gap-key" data-key="g">
@@ -57,7 +62,50 @@
         <a class="btn ghost" href="about.html">About Us</a>
       </div>
     </section>
+
   </main>
+
+  <script>
+ window.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const hero = document.querySelector(".hero.hero-image");
+  const audio = new Audio("assets/store-hum.mp3");
+  audio.loop = true;
+  audio.volume = 0.4;
+
+  const finalState = localStorage.getItem("finalStoreState") === "true";
+
+  // 1️⃣ If we've already clicked to finalize, show fig2 permanently
+  if (finalState) {
+    hero.style.backgroundImage = "url('assets/store-empty-fig2.jpg')";
+    document.body.classList.add("post-gap", "final-state");
+    return; // stop here
+  }
+
+  // 2️⃣ If we arrived via the GAP sequence, show fig1 and play audio
+  if (urlParams.has("gap")) {
+    hero.style.backgroundImage = "url('assets/store-empty-fig1.jpg')";
+    document.body.classList.add("post-gap");
+
+    audio.play().catch(() => {
+      document.body.addEventListener("click", () => audio.play(), { once: true });
+    });
+
+    document.body.addEventListener("click", () => {
+      audio.pause();
+      audio.currentTime = 0;
+      hero.style.backgroundImage = "url('assets/store-empty-fig2.jpg')";
+      document.body.classList.add("final-state");
+      localStorage.setItem("finalStoreState", "true");
+    }, { once: true });
+  }
+
+  // 3️⃣ Default: normal empty store
+  else {
+    hero.style.backgroundImage = "url('assets/store-empty.jpg')";
+  }
+});
+  </script>
 
   <footer class="site-footer">
     <div class="wrap">
@@ -65,5 +113,6 @@
       <p class="tiny">Founded in 2009. Closed in 2017. Reopening soon.</p>
     </div>
   </footer>
+
 </body>
 </html>
