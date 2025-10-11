@@ -1050,3 +1050,28 @@ body.shrink-3 .btn.weird-btn {
   opacity: 1;
   pointer-events: auto;
 }
+
+/* --- Chatbox fade-out effect --- */
+@keyframes chatFadeOut {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+  60% {
+    opacity: 0.4;
+    filter: blur(2px);
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(30px);
+  }
+}
+
+#help-chat.fade-away {
+  animation: chatFadeOut 2.5s ease forwards;
+}
+
+

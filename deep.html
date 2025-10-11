@@ -7,21 +7,170 @@
   <meta name="description" content="The lights came back on, but something’s changed.">
   <link rel="stylesheet" href="styles.css">
   <script defer src="script.js"></script>
+
+  <style>
+  /* ================================================
+     Deep Page: Yellowed & Disheveled Look
+     ================================================ */
+  body.deep {
+    background: #f4f1e0;
+    color: #3b2f1a;
+    filter: sepia(0.2) contrast(0.9) brightness(0.95) saturate(0.8);
+    background-image:
+      radial-gradient(rgba(255, 255, 240, 0.2) 1px, transparent 1px),
+      radial-gradient(rgba(255, 255, 240, 0.2) 1px, transparent 1px);
+    background-size: 4px 4px, 3px 3px;
+    background-blend-mode: multiply;
+    animation: faintFlicker 7s infinite;
+  }
+
+  body.deep .wrap,
+  body.deep .site-header,
+  body.deep .site-footer,
+  body.deep .content {
+    background: rgba(245, 240, 220, 0.85);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.08);
+    border: 1px solid rgba(100, 85, 45, 0.25);
+  }
+
+  body.deep p,
+  body.deep strong,
+  body.deep small,
+  body.deep a {
+    color: #3a2f1a !important;
+    text-shadow: 0.3px 0.3px rgba(0, 0, 0, 0.05);
+    filter: blur(0.2px) brightness(0.95);
+    letter-spacing: 0.02em;
+  }
+
+  body.deep .hero h1 {
+    color: #e8e4d0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    position: relative;
+    top: 3px;
+    left: -2px;
+    transform: rotate(-0.4deg);
+  }
+
+  body.deep .hero small {
+    color: #e6e2cc;
+  }
+
+  body.deep .hero p {
+    margin-top: -6px;
+    color: #e2ddc5;
+  }
+
+  body.deep .coming {
+    background: rgba(243, 237, 208, 0.85);
+    border: 1px solid rgba(90, 70, 30, 0.3);
+    box-shadow: 0 0 8px rgba(0,0,0,0.08), inset 0 0 6px rgba(255,255,255,0.15);
+    padding: 1.5em;
+    border-radius: 4px;
+    filter: brightness(0.96) contrast(0.95);
+  }
+
+  body.deep .coming strong {
+    color: #3a2f1a;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  body.deep::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255,255,200,0.1), rgba(0,0,0,0.15));
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes faintFlicker {
+    0%, 100% { filter: brightness(1) contrast(1); }
+    48%, 52% { filter: brightness(0.9) contrast(1.05); }
+    96% { filter: brightness(1.05); }
+  }
+
+  body.deep .hero h1 {
+    color: #f2eee0 !important;
+    text-shadow: 1px 1px 3px rgba(70, 55, 30, 0.45);
+  }
+
+  body.deep .hero small,
+  body.deep .hero p {
+    color: #f2eee0 !important;
+    text-shadow: 1px 1px 3px rgba(60, 45, 25, 0.6);
+    letter-spacing: 0.01em;
+    filter: brightness(0.95);
+  }
+
+  body.deep .logo {
+    cursor: grab;
+    display: inline-block;
+    transition: transform 0.4s ease, filter 0.3s ease;
+  }
+
+  body.deep .logo.sag {
+    transform: translateY(10px) rotate(3deg) scaleY(0.92);
+    filter: brightness(0.8) sepia(0.25);
+    cursor: grabbing;
+  }
+
+  body.deep .wrap,
+  body.deep .site-header,
+  body.deep .content,
+  body.deep .site-footer {
+    backdrop-filter: sepia(0.2) brightness(0.95) contrast(0.9);
+  }
+
+  @keyframes textDrift {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-0.5px); }
+  }
+
+  body.deep .hero h1, 
+  body.deep .hero p {
+    animation: textDrift 5s infinite;
+  }
+
+  body.deep img {
+    user-drag: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+  }
+
+  /* Flip the About link upside down */
+  body.deep .nav a.flip {
+    display: inline-block;
+    transform: rotate(180deg);
+    transform-origin: center;
+    filter: brightness(0.9);
+    transition: transform 0.4s ease;
+  }
+
+  body.deep .nav a.flip:hover {
+    transform: rotate(0deg);
+  }
+  </style>
 </head>
+
 <body class="vintage deep" data-page="deep">
   <header class="site-header">
     <div class="wrap">
-      <a href="index.html" class="logo">
+      <div class="logo droopy" id="deep-logo">
         <img src="assets/logo.png" alt="gap" width="140" height="40">
-      </a>
+      </div>
       <nav class="nav">
-        <a href="products.html">Products</a>
-        <a href="about.html">About</a>
+        <!-- ✅ Corrected the href -->
+        <a href="prouctds.html" id="shuffleLink">Products</a>
+        <a href="tuoba.html" class="flip">About</a>
         <a href="#" class="join">you're here</a>
       </nav>
     </div>
   </header>
-<button class="btn weird-btn template" style="display:none;">Weird</button>
 
   <main class="wrap main">
     <section class="hero hero-image" style="filter:sepia(0.4) brightness(0.8);">
@@ -37,8 +186,136 @@
     </section>
   </main>
 
-  <!-- Button that stays the same size -->
   <button class="btn weird-btn" id="weirdButton">don't go</button>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const logo = document.getElementById("deep-logo");
+    const img = logo.querySelector("img");
+    img.addEventListener("dragstart", e => e.preventDefault());
+
+    const stretchSound = new Audio("assets/stretch.mp3");
+    stretchSound.loop = true;
+    stretchSound.volume = 0.6;
+
+    const tearSound = new Audio("assets/tear.mp3");
+    const dropSound = new Audio("assets/drop-thump.mp3");
+
+    let clickCount = 0;
+    let isDragging = false;
+    let hasTornLoose = false;
+    let isFalling = false;
+    let startX = 0, startY = 0, offsetX = 0, offsetY = 0;
+
+    logo.addEventListener("click", () => {
+      if (isDragging || isFalling) return;
+      clickCount++;
+      const sagAmount = Math.min(clickCount * 4, 12);
+      const rotateAmount = (Math.random() - 0.5) * clickCount;
+      logo.style.transition = "transform 0.25s ease";
+      logo.style.transform = `translateY(${sagAmount}px) rotate(${rotateAmount}deg) scaleY(0.96)`;
+
+      if (clickCount >= 3) {
+        isFalling = true;
+        const fallDistance = window.innerHeight - logo.getBoundingClientRect().top + 100;
+        setTimeout(() => {
+          logo.style.transition = "transform 1.2s cubic-bezier(0.3, 1.4, 0.6, 1), opacity 1s ease";
+          logo.style.transform = `translateY(${fallDistance}px) rotate(${Math.random() * 30 - 15}deg)`;
+          logo.style.opacity = "0.6";
+          dropSound.play().catch(()=>{});
+          setTimeout(() => logo.remove(), 1500);
+        }, 250);
+      }
+    });
+
+    logo.addEventListener("mousedown", (e) => {
+      if (isFalling) return;
+      e.preventDefault();
+      const rect = logo.getBoundingClientRect();
+      startX = e.clientX;
+      startY = e.clientY;
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      isDragging = true;
+      hasTornLoose = false;
+      logo.style.transition = "none";
+      logo.style.cursor = "grabbing";
+      logo.style.zIndex = "9999";
+      stretchSound.currentTime = 0;
+      stretchSound.play().catch(()=>{});
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging || isFalling) return;
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+      const distance = Math.hypot(deltaX, deltaY);
+      if (!hasTornLoose) {
+        const resistance = 0.2;
+        logo.style.transform = `translate(${deltaX * resistance}px, ${deltaY * resistance}px) rotate(${deltaX * 0.02}deg)`;
+        if (distance > 50) {
+          hasTornLoose = true;
+          stretchSound.pause();
+          stretchSound.currentTime = 0;
+          tearSound.currentTime = 0;
+          tearSound.play().catch(()=>{});
+        }
+      } else {
+        logo.style.position = "absolute";
+        logo.style.left = `${e.clientX - offsetX}px`;
+        logo.style.top = `${e.clientY - offsetY}px`;
+        logo.style.transform = "rotate(0deg) scale(1)";
+      }
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (!isDragging || isFalling) return;
+      isDragging = false;
+      stretchSound.pause();
+      stretchSound.currentTime = 0;
+      if (hasTornLoose) {
+        isFalling = true;
+        const rect = logo.getBoundingClientRect();
+        const fallDistance = window.innerHeight - rect.top + 100;
+        logo.style.transition = "transform 1.2s cubic-bezier(0.3, 1.4, 0.6, 1), opacity 1s ease";
+        logo.style.transform = `translateY(${fallDistance}px) rotate(${Math.random() * 20 - 10}deg)`;
+        logo.style.opacity = "0.7";
+        dropSound.play().catch(()=>{});
+        setTimeout(() => {
+          logo.style.transition = "opacity 0.5s ease";
+          logo.style.opacity = "0";
+          setTimeout(() => logo.remove(), 600);
+        }, 1200);
+      } else {
+        logo.style.transition = "transform 0.3s ease";
+        logo.style.transform = "translate(0,0)";
+        logo.style.cursor = "grab";
+      }
+    });
+
+    // === PRODUCTS text shuffler + guaranteed redirect ===
+    const link = document.getElementById("shuffleLink");
+    const baseWord = "Products";
+
+    function shuffleWord(word) {
+      return word.split("").sort(() => Math.random() - 0.5).join("");
+    }
+
+    function animateShuffle() {
+      link.textContent = shuffleWord(baseWord);
+      const delay = 150 + Math.random() * 400;
+      setTimeout(animateShuffle, delay);
+    }
+
+    animateShuffle();
+
+    // ✅ FORCE navigate to prouctds.html only
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.assign("prouctds.html");
+    });
+  });
+  </script>
 
   <footer class="site-footer">
     <div class="wrap">
@@ -48,5 +325,3 @@
   </footer>
 </body>
 </html>
-
-

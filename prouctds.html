@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Products — thegapfamily</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      overflow: hidden;
+    }
+
+    #page-wrapper {
+      transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+      transform-origin: center center;
+    }
+
+    #page-wrapper.blurred {
+      filter: blur(10px);
+    }
+
+    #static-overlay {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.05) 0px,
+        rgba(0,0,0,0.1) 1px
+      );
+      opacity: 0;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      transition: opacity 0.6s ease;
+      z-index: 9999;
+    }
+
+    #glitch-flash {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(90deg, #fff 0%, #ff0000 33%, #00ffff 66%, #fff 100%);
+      mix-blend-mode: screen;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10000;
+    }
+
+    .flash-active {
+      animation: glitchFlash 0.5s steps(2, end);
+    }
+
+    @keyframes glitchFlash {
+      0% { opacity: 0; filter: none; }
+      10% { opacity: 1; filter: contrast(3) saturate(3) hue-rotate(20deg); }
+      25% { opacity: 0.5; filter: hue-rotate(-20deg) blur(2px); }
+      50% { opacity: 1; filter: contrast(4) brightness(1.5) saturate(2.5); }
+      75% { opacity: 0.8; filter: hue-rotate(40deg) blur(1px); }
+      100% { opacity: 0; filter: none; }
+    }
+
+    .help-chat {
+      width: 320px;
+      max-width: 90vw;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 5000;
+      display: none;
+    }
+
+    .help-header {
+      background: #002f94;
+      color: #fff;
+      padding: 0.6rem;
+      font-weight: bold;
+    }
+
+    .help-messages {
+      flex: 1;
+      padding: 0.6rem;
+      overflow-y: auto;
+    }
+
+    .help-message.comehere {
+      background: #e9eef7;
+      color: #111;
+      border-radius: 4px;
+      margin-bottom: 0.4rem;
+      padding: 0.4rem 0.6rem;
+      line-height: 1.3;
+      font-size: 0.85rem;
+      animation: dmMessageIn 0.3s ease;
+    }
+    .help-message.comehere.step2 {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      background: #e2e8f8;
+      color: #002f94;
+    }
+    .help-message.comehere.step3 {
+      background: #dde4f7;
+      color: #001a66;
+      animation: textShake 0.15s ease-in-out infinite alternate;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+    .help-message.comehere.step4 {
+      background: #f0f2ff;
+      font-family: 'Times New Roman', serif;
+      font-style: italic;
+      color: #000;
+      letter-spacing: 0.5px;
+      font-size: 1.2rem;
+      animation: subtlePulse 1s ease-in-out infinite alternate;
+    }
+    .help-message.comehere.step5 {
+      background: none;
+      color: #ff0000;
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-shadow: 0 0 6px rgba(255, 0, 0, 0.8);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      text-align: center;
+      animation: flickerGlitch 0.2s steps(2, end) infinite;
+    }
+
+    @keyframes textShake {
+      0% { transform: translate(0,0); }
+      25% { transform: translate(-1px,0); }
+      50% { transform: translate(1px,-1px); }
+      75% { transform: translate(0,1px); }
+      100% { transform: translate(0,0); }
+    }
+    @keyframes subtlePulse {
+      0% { opacity: 0.8; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1.05); }
+    }
+    @keyframes flickerGlitch {
+      0%,100% { opacity: 1; filter: none; }
+      20% { opacity: 0.5; filter: contrast(2) saturate(2.5); }
+      40% { opacity: 1; filter: hue-rotate(20deg); }
+      60% { opacity: 0.7; filter: contrast(1.5) brightness(1.2); }
+      80% { opacity: 1; filter: hue-rotate(-20deg); }
+    }
+    @keyframes dmMessageIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes staticFlicker {
+      0%,100% { opacity: 0.1; }
+      50% { opacity: 0.4; }
+    }
+    @keyframes screenShake {
+      0% { transform: translate(0,0); }
+      25% { transform: translate(-2px, 2px); }
+      50% { transform: translate(2px, -2px); }
+      75% { transform: translate(-1px, 1px); }
+      100% { transform: translate(0,0); }
+    }
+  </style>
+</head>
+
+<body class="vintage" data-page="products">
+  <div id="page-wrapper">
+    <header class="site-header">
+      <div class="wrap">
+        <a href="#" class="logo"><img src="assets/logo.png" alt="gap" id="logo-img"></a>
+        <nav class="nav">
+          <a href="#" class="disabled-link active">Products</a>
+          <a href="#" class="disabled-link">About</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap main">
+      <section class="hero hero-image products-hero">
+        <h1>Our Products</h1>
+        <p>Some shelves are still empty.</p>
+      </section>
+
+      <section class="content">
+        <div class="grid empty">
+          <div class="product placeholder">
+            <img src="assets/bg.jpg" alt="placeholder-product">
+            <p class="pname">#001 — Placeholder</p>
+          </div>
+          <div class="product placeholder">
+            <img src="assets/bg.jpg" alt="placeholder-product">
+            <p class="pname">#002 — Placeholder</p>
+          </div>
+        </div>
+        <p class="small">If you have questions about stock or security, contact Loss Prevention. We are family.</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>&copy; <span id="year"></span> thegapfamily. All rights reserved. We are family.</p>
+      </div>
+    </footer>
+
+    <div class="help-chat" id="chat">
+      <div class="help-header">family</div>
+      <div class="help-messages" id="messages"></div>
+    </div>
+  </div>
+
+  <div id="static-overlay"></div>
+  <div id="glitch-flash"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const wrapper = document.getElementById("page-wrapper");
+      const body = document.body;
+      const overlay = document.getElementById("static-overlay");
+      const glitch = document.getElementById("glitch-flash");
+      const chat = document.getElementById("chat");
+      const messages = document.getElementById("messages");
+      const logo = document.getElementById("logo-img");
+
+      // Disable all header and nav links
+      document.querySelectorAll('header a').forEach(a => {
+        a.addEventListener('click', e => e.preventDefault());
+      });
+
+      // Make logo blur the page
+      logo.addEventListener('click', e => {
+        e.preventDefault();
+        wrapper.classList.toggle('blurred');
+      });
+
+      let shrinkCount = 0;
+      let shrinking = false;
+      let spamRate = 800;
+      let shakeIntensity = 0;
+
+      chat.style.display = "flex";
+
+      const messageSteps = [
+        { text: "come here", step: "step1" },
+        { text: "Come here.", step: "step2" },
+        { text: "COME HERE", step: "step3" },
+        { text: "come... here...", step: "step4" },
+        { text: "COME  HERE", step: "step5" }
+      ];
+
+      function addMessage() {
+        const stepIndex = Math.floor(Math.random() * messageSteps.length);
+        const msg = document.createElement("div");
+        msg.className = `help-message comehere ${messageSteps[stepIndex].step}`;
+        msg.textContent = messageSteps[stepIndex].text;
+        messages.appendChild(msg);
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      function startSpam() {
+        addMessage();
+        setTimeout(startSpam, spamRate);
+      }
+      startSpam();
+
+      document.addEventListener("click", () => {
+        if (shrinking) return;
+        shrinking = true;
+
+        shrinkCount++;
+        const scaleFactor = Math.max(0.1, 1 - shrinkCount * 0.1);
+        wrapper.style.transform = `scale(${scaleFactor})`;
+        wrapper.style.opacity = `${scaleFactor}`;
+
+        spamRate = Math.max(50, spamRate * 0.8);
+        shakeIntensity = Math.min(1, shakeIntensity + 0.1);
+        body.style.animation = `screenShake ${Math.max(0.1, 0.4 - shakeIntensity * 0.25)}s infinite`;
+
+        if (navigator.vibrate) {
+          navigator.vibrate(100 + shrinkCount * 30);
+        }
+
+        if (scaleFactor <= 0.1) {
+          setTimeout(() => {
+            glitch.classList.add("flash-active");
+            setTimeout(() => {
+              body.style.background = "#fff";
+              overlay.style.opacity = "1";
+              overlay.style.animation = "staticFlicker 0.08s infinite";
+              setTimeout(() => {
+                window.location.href = "deep.html";
+              }, 3000);
+            }, 600);
+          }, 500);
+        }
+
+        setTimeout(() => { shrinking = false; }, 300);
+      });
+    });
+  </script>
+</body>
+</html>

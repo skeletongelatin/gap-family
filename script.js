@@ -513,21 +513,38 @@ function setupHelpAndDMChat(){
       "…did you clock in?",
     ];
 
-    if (productWords.test(lower)) {
-      showTyping(() => {
-        const msg = document.createElement("div");
-        msg.className = "help-message bot";
-        msg.textContent = "Check in the back →";
-        helpMessages.appendChild(msg);
-        helpMessages.scrollTop = helpMessages.scrollHeight;
+if (productWords.test(lower)) {
+  showTyping(() => {
+    const msg = document.createElement("div");
+    msg.className = "help-message bot";
+    msg.textContent = "Check in the back →";
+    helpMessages.appendChild(msg);
+    helpMessages.scrollTop = helpMessages.scrollHeight;
 
-        createBackDoorOverlay();
-      }, 1500);
-    } else {
-      showTyping(() => {
-        addMessage("bot", nonsense[Math.floor(Math.random() * nonsense.length)]);
-      }, 1000);
-    }
+    // --- Add creepy fade-out of chat ---
+    const chatbox = document.querySelector("#help-chat");
+    setTimeout(() => {
+      // subtle vibration + fade sound at start of fade
+      navigator.vibrate?.([40, 30, 80]);
+      const fadeSound = new Audio("assets/ui-fade.mp3"); // subtle hum/glitch
+      fadeSound.volume = 0.4;
+      fadeSound.play().catch(() => {});
+
+      if (chatbox) {
+        chatbox.classList.add("fade-away");
+        // Optional: remove it completely after animation
+        setTimeout(() => chatbox.remove(), 3000);
+      }
+    }, 1800); // wait ~1.8s after message appears
+
+    // --- Continue to backroom sequence ---
+    setTimeout(() => {
+      createBackDoorOverlay();
+    }, 2500);
+  }, 1500);
+}
+
+
   }
 
   /* ------------------------------------------------------------
