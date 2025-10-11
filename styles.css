@@ -99,6 +99,57 @@ body.secret {background:#0b0b0c;color:#ddd;}
 .deep-loop .site-header,
 .deep-loop .site-footer {filter:brightness(.9);}
 
+
+/* === Backroom Door overlay (place near hero-image styles) === */
+.hero-image {
+  /* keep existing styles, but ensure we can absolutely position the door over it */
+  position: relative;
+  overflow: visible;
+}
+
+/* ============================================================
+   Back Door Overlay (Clean Version — Centered in Hero)
+   ============================================================ */
+/* === Back Door Overlay (FINAL CENTERED VERSION) === */
+.door-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(220px, 28%);
+  max-width: 280px;
+  z-index: 60;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none; /* hidden until visible */
+}
+
+/* Make the image properly clickable and centered */
+.door-overlay img {
+  pointer-events: auto;
+  cursor: pointer;
+  width: 120px; /* tweak as needed */
+  height: auto;
+  display: block;
+}
+
+/* When activated */
+.door-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Keeps chat bubble on top */
+#help-bubble {
+  z-index: 9999;
+}
+
+
+
 /* ============================================================
    GAP Sequence styling
    ============================================================ */
@@ -951,4 +1002,51 @@ body.shrink-3 .btn.weird-btn {
 /* Enlarged mode (no stretching, scales from center) */
 .weird-btn.final-stage.enlarged {
   transform: translate(-50%, -50%) scale(3);
+}
+/* ============================================================
+   Hero Flicker — Fast, Harsh Strobe (Fluorescent Light Effect)
+   ============================================================ */
+.hero-image.dm-flicker {
+  animation: heroFlicker 0.9s steps(1, end);
+}
+
+@keyframes heroFlicker {
+  0% { filter: brightness(1); }
+  5% { filter: brightness(0.1); }
+  10% { filter: brightness(1); }
+  15% { filter: brightness(0.3); }
+  25% { filter: brightness(1); }
+  35% { filter: brightness(0.2); }
+  45% { filter: brightness(1); }
+  55% { filter: brightness(0.15); }
+  70% { filter: brightness(1); }
+  80% { filter: brightness(0.25); }
+  90% { filter: brightness(1); }
+  100% { filter: brightness(0.05); }
+}
+
+/* === FIX: Center door inside hero image === */
+.hero-image,
+.products-hero {
+  position: relative !important; /* makes the hero the positioning parent */
+}
+
+.door-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(220px, 28%);
+  max-width: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.door-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
